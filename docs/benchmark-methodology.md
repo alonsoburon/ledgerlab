@@ -17,7 +17,7 @@ Users draw from a shared account pool (`max(8, users)`, capped at 128) so writes
 
 `raw` is a saturated transfer loop with no think time and no reads. It measures the maximum persisted transfers per second and how the write path queues. It is never reported as a user count.
 
-The in-memory core runs inside the engine as a separate request: each worker owns an independent account pair and applies the funds check and debit/credit over and over with no HTTP and no SQLite. It is reported in operations/second and isn't comparable to API req/s. The COBOL authorization routine is wrapped in a process mutex because concurrent calls into the current GCC COBOL runtime weren't safe, so its core result includes serialized calls.
+The in-memory core runs inside the engine as a separate request: each worker owns an independent account pair and applies the funds check and debit/credit over and over with no HTTP and no SQLite. It is reported in operations/second and isn't comparable to API req/s. The COBOL authorization routine is wrapped in a process mutex because concurrent calls into the GCC COBOL runtime hang the server (verified: dropping the lock loses the connection), so its core result includes serialized calls and reads lower than the equivalent C path.
 
 ## Service-level objectives
 

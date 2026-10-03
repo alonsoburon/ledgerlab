@@ -25,10 +25,10 @@ Concurrent users under the SLO:
 
 | Engine | Sessions | First breach | Writers | First breach |
 |---|---:|---:|---:|---:|
-| Python | 5,120 | 6,144 | 512 | 640 |
-| Rust | 8,192 | at the limit | 128 | 320 |
-| C | 7,168 | 8,192 | 512 | 640 |
-| COBOL hybrid | 7,168 | 8,192 | 512 | 640 |
+| Python | 2,560 | 3,072 | 224 | 256 |
+| Rust | 4,096 | 5,120 | 2,048 | no breach |
+| C | 3,072 | 3,584 | 512 | 640 |
+| COBOL hybrid | 2,048 | 3,584 | 512 | 640 |
 
 ![Concurrent capacity by engine](docs/figures/capacity_by_engine.png)
 
@@ -36,19 +36,19 @@ A short session run (32 users, 10 seconds) looks like this. Everything passes co
 
 | Engine | req/s | p50 ms | p95 ms | p99 ms | core Mops/s |
 |---|---:|---:|---:|---:|---:|
-| Python | 6.9 | 1.21 | 1.69 | 1.92 | 0.62 |
-| Rust | 6.6 | 1.18 | 1.76 | 1.88 | 6.82 |
-| C | 6.6 | 1.17 | 1.59 | 1.71 | 6.52 |
-| COBOL hybrid | 6.7 | 1.05 | 1.55 | 1.73 | 1.16 |
+| Python | 8.0 | 2.68 | 3.28 | 3.56 | 0.38 |
+| Rust | 8.1 | 2.06 | 2.36 | 2.84 | 3.70 |
+| C | 8.1 | 2.19 | 2.43 | 2.54 | 3.98 |
+| COBOL hybrid | 8.0 | 2.75 | 2.94 | 3.15 | 0.72 |
 
 The raw write path saturates and then queueing takes over:
 
 | Engine | Peak transfers/s | Capacity under SLO | First breach |
 |---|---:|---:|---:|
-| Python | 1,831 @ 64 | 512 | 640 |
-| Rust | 5,525 @ 512 | 128 | 320 |
-| C | 3,803 @ 128 | 512 | 640 |
-| COBOL hybrid | 3,797 @ 128 | 512 | 640 |
+| Python | 776 @ 192 | 224 | 256 |
+| Rust | 7,476 @ 256 | 2,048 | no breach |
+| C | 3,658 @ 1,024 | 512 | 640 |
+| COBOL hybrid | 3,741 @ 64 | 512 | 640 |
 
 ![Latency by percentile](docs/figures/latency_by_engine.png)
 ![Peak throughput](docs/figures/throughput_by_engine.png)
@@ -58,11 +58,13 @@ The raw write path saturates and then queueing takes over:
 
 ## What I found
 
-The bottleneck moves. Everything is fast until the single SQLite writer saturates, and after that queueing is what makes latency climb. At a few thousand users the load generator on the same box also starts to matter, so the language stops being the limiting factor.
+Rust used to show a weird profile: fast median, exploding p99, because it opened a new SQLite connection on every request and let writers fight over the lock. It now reuses one connection per worker in a fixed thread pool, so the tail is uniform like everyone else's, and it leads on both sessions and the raw write path.
 
-The tail is what breaks first. The median stays flat while p99 climbs, so capacity here is a tail-latency question rather than a throughput one.
+The bottleneck is the single SQLite writer. Once it saturates, queueing drives latency up; a few thousand users in, the load generator sharing the box starts to matter too.
 
-Rust took the most concurrent sessions, Python the least, and C and COBOL came out identical, which makes sense since the COBOL core runs through C's HTTP adapter.
+C and COBOL come out identical because the COBOL core runs through C's HTTP/SQLite adapter. The one place they differ is the in-memory core: COBOL's authorization routine needs a process mutex (the GCC runtime hangs under concurrent calls — I tested removing it and the server lost the connection), so its core number reads lower than C's.
+
+Numbers move around a lot. Consecutive runs on this desktop have differed by roughly 2x in session capacity, so treat these tables as one sample of one machine, not a benchmark score.
 
 ## Running it
 

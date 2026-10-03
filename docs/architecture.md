@@ -17,7 +17,7 @@ Browser UI / CLI load generator
 
 The manager serves the dashboard and the evaluation API. Picking an engine builds it if needed, starts it on a free loopback port with a throwaway database, waits for `/health`, checks protocol conformance, runs a load profile (`session` virtual users or `raw` write saturation), checks the ledger invariants, then stops the process and deletes the database. It can also run a concurrency sweep and report the highest level that still meets the SLOs. Build time and startup are reported separately.
 
-Python is a threaded HTTP server. Rust uses `tiny_http` with one worker thread per request. C uses libevent with a synchronous event loop. The COBOL funds-authorization core is called from the shared C libevent/SQLite adapter. What gets compared is the whole stack and its concurrency strategy, not the language in isolation, and the COBOL numbers include C's transport and storage.
+Python is a threaded HTTP server. Rust runs a fixed pool of worker threads fed by a shared queue, each worker holding one persistent SQLite connection. C uses libevent with a synchronous event loop. The COBOL funds-authorization core is called from the shared C libevent/SQLite adapter. What gets compared is the whole stack and its concurrency strategy, not the language in isolation, and the COBOL numbers include C's transport and storage.
 
 ## Ledger model
 

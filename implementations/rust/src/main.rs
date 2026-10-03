@@ -1,6 +1,13 @@
 use rusqlite::{params, Connection, OptionalExtension, TransactionBehavior};
 use serde_json::{json, Value};
-use std::{env, io::Read, sync::Arc, thread, time::{Duration, Instant}};
+use std::{
+    collections::VecDeque,
+    env,
+    io::Read,
+    sync::{Arc, Condvar, Mutex},
+    thread,
+    time::{Duration, Instant},
+};
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 use uuid::Uuid;
 
@@ -62,56 +69,44 @@ fn fail(status: u16, code: &str, message: impl ToString) -> Response<std::io::Cu
     json_response(status, json!({"error":{"code":code,"message":message.to_string()}}))
 }
 
-fn handle(mut request: Request, db_path: Arc<String>) {
+/// Serve one request on the worker's persistent connection.
+fn handle(mut request: Request, db: &mut Connection) {
     let method = request.method().clone();
     let raw_url = request.url().to_string();
     let path = raw_url.split('?').next().unwrap_or("/");
     let response = if method == Method::Get && path == "/health" {
         json_response(200, json!({"status":"ok","implementation":"rust","protocol_version":1}))
     } else if method == Method::Get && path == "/metrics" {
-        match open_db(&db_path) {
-            Ok(db) => {
-                let entries: i64 = db.query_row("SELECT COUNT(*) FROM entries", [], |r| r.get(0)).unwrap_or(0);
-                let net: i64 = db.query_row("SELECT COALESCE(SUM(amount_minor),0) FROM entries", [], |r| r.get(0)).unwrap_or(0);
-                let transfers: i64 = db.query_row("SELECT COUNT(*) FROM transfers", [], |r| r.get(0)).unwrap_or(0);
-                let invalid: i64 = db.query_row("SELECT COUNT(*) FROM (SELECT transfer_id FROM entries GROUP BY transfer_id HAVING COUNT(*) != 2 OR SUM(amount_minor) != 0)", [], |r| r.get(0)).unwrap_or(0);
-                let balance_mismatches: i64 = db.query_row("SELECT COUNT(*) FROM accounts a WHERE a.balance_minor != COALESCE((SELECT SUM(amount_minor) FROM entries e WHERE e.account_id=a.id),0)", [], |r| r.get(0)).unwrap_or(-1);
-                json_response(200, json!({"entry_count":entries,"net_minor":net,"transfer_count":transfers,"invalid_transfer_groups":invalid,"balance_mismatch_accounts":balance_mismatches}))
-            }, Err(e) => fail(500,"storage_error",e)
-        }
+        let entries: i64 = db.query_row("SELECT COUNT(*) FROM entries", [], |r| r.get(0)).unwrap_or(0);
+        let net: i64 = db.query_row("SELECT COALESCE(SUM(amount_minor),0) FROM entries", [], |r| r.get(0)).unwrap_or(0);
+        let transfers: i64 = db.query_row("SELECT COUNT(*) FROM transfers", [], |r| r.get(0)).unwrap_or(0);
+        let invalid: i64 = db.query_row("SELECT COUNT(*) FROM (SELECT transfer_id FROM entries GROUP BY transfer_id HAVING COUNT(*) != 2 OR SUM(amount_minor) != 0)", [], |r| r.get(0)).unwrap_or(0);
+        let balance_mismatches: i64 = db.query_row("SELECT COUNT(*) FROM accounts a WHERE a.balance_minor != COALESCE((SELECT SUM(amount_minor) FROM entries e WHERE e.account_id=a.id),0)", [], |r| r.get(0)).unwrap_or(-1);
+        json_response(200, json!({"entry_count":entries,"net_minor":net,"transfer_count":transfers,"invalid_transfer_groups":invalid,"balance_mismatch_accounts":balance_mismatches}))
     } else if method == Method::Get && path == "/ledger" {
-        match open_db(&db_path) {
-            Ok(db) => {
-                let account=raw_url.split("account_id=").nth(1).map(|s|s.split('&').next().unwrap_or("")).filter(|s|!s.is_empty());
-                let limit=raw_url.split("limit=").nth(1).and_then(|s|s.split('&').next()?.parse::<u32>().ok()).unwrap_or(100).clamp(1,1000);
-                let mut entries=Vec::new();
-                if let Some(account_id)=account {
-                    if let Ok(mut stmt)=db.prepare("SELECT id,transfer_id,account_id,amount_minor,created_at FROM entries WHERE account_id=?1 ORDER BY id DESC LIMIT ?2") {
-                        if let Ok(rows)=stmt.query_map(params![account_id,limit],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"transfer_id":r.get::<_,String>(1)?,"account_id":r.get::<_,String>(2)?,"amount_minor":r.get::<_,i64>(3)?,"created_at":r.get::<_,String>(4)?}))) { entries.extend(rows.flatten()); }
-                    }
-                } else if let Ok(mut stmt)=db.prepare("SELECT id,transfer_id,account_id,amount_minor,created_at FROM entries ORDER BY id DESC LIMIT ?1") {
-                    if let Ok(rows)=stmt.query_map([limit],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"transfer_id":r.get::<_,String>(1)?,"account_id":r.get::<_,String>(2)?,"amount_minor":r.get::<_,i64>(3)?,"created_at":r.get::<_,String>(4)?}))) { entries.extend(rows.flatten()); }
-                }
-                json_response(200,json!({"entries":entries}))
-            }, Err(e)=>fail(500,"storage_error",e)
+        let account=raw_url.split("account_id=").nth(1).map(|s|s.split('&').next().unwrap_or("")).filter(|s|!s.is_empty());
+        let limit=raw_url.split("limit=").nth(1).and_then(|s|s.split('&').next()?.parse::<u32>().ok()).unwrap_or(100).clamp(1,1000);
+        let mut entries=Vec::new();
+        if let Some(account_id)=account {
+            if let Ok(mut stmt)=db.prepare("SELECT id,transfer_id,account_id,amount_minor,created_at FROM entries WHERE account_id=?1 ORDER BY id DESC LIMIT ?2") {
+                if let Ok(rows)=stmt.query_map(params![account_id,limit],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"transfer_id":r.get::<_,String>(1)?,"account_id":r.get::<_,String>(2)?,"amount_minor":r.get::<_,i64>(3)?,"created_at":r.get::<_,String>(4)?}))) { entries.extend(rows.flatten()); }
+            }
+        } else if let Ok(mut stmt)=db.prepare("SELECT id,transfer_id,account_id,amount_minor,created_at FROM entries ORDER BY id DESC LIMIT ?1") {
+            if let Ok(rows)=stmt.query_map([limit],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"transfer_id":r.get::<_,String>(1)?,"account_id":r.get::<_,String>(2)?,"amount_minor":r.get::<_,i64>(3)?,"created_at":r.get::<_,String>(4)?}))) { entries.extend(rows.flatten()); }
         }
+        json_response(200,json!({"entries":entries}))
     } else if method == Method::Get && path == "/accounts" {
-        match open_db(&db_path) {
-            Ok(db) => {
-                let mut stmt = db.prepare("SELECT id,currency,created_at FROM accounts ORDER BY id").unwrap();
-                let rows = stmt.query_map([], |r| Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?)));
-                let mut accounts = Vec::new();
-                if let Ok(rows) = rows { for row in rows.flatten() { let (id,currency,created)=row; let bal=balance(&db,&id).unwrap_or(0); accounts.push(json!({"id":id,"currency":currency,"created_at":created,"balance_minor":bal})); } }
-                json_response(200,json!({"accounts":accounts}))
-            }, Err(e) => fail(500,"storage_error",e)
+        let mut accounts=Vec::new();
+        if let Ok(mut stmt)=db.prepare("SELECT id,currency,created_at FROM accounts ORDER BY id") {
+            let rows=stmt.query_map([], |r| Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?)));
+            if let Ok(rows)=rows { for row in rows.flatten() { let (id,currency,created)=row; let bal=balance(db,&id).unwrap_or(0); accounts.push(json!({"id":id,"currency":currency,"created_at":created,"balance_minor":bal})); } }
         }
+        json_response(200,json!({"accounts":accounts}))
     } else if method == Method::Get && path.starts_with("/accounts/") {
-        let id = &path[10..];
-        match open_db(&db_path) {
-            Ok(db) => match db.query_row("SELECT currency,created_at FROM accounts WHERE id=?1",[id],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?))).optional() {
-                Ok(Some((currency,created))) => json_response(200,json!({"id":id,"currency":currency,"created_at":created,"balance_minor":balance(&db,id).unwrap_or(0)})),
-                Ok(None) => fail(404,"account_not_found","Account not found"), Err(e)=>fail(500,"storage_error",e)
-            }, Err(e)=>fail(500,"storage_error",e)
+        let id=&path[10..];
+        match db.query_row("SELECT currency,created_at FROM accounts WHERE id=?1",[id],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?))).optional() {
+            Ok(Some((currency,created))) => json_response(200,json!({"id":id,"currency":currency,"created_at":created,"balance_minor":balance(db,id).unwrap_or(0)})),
+            Ok(None) => fail(404,"account_not_found","Account not found"), Err(e)=>fail(500,"storage_error",e)
         }
     } else if method == Method::Post && path == "/bench/memory" {
         let mut body=String::new();
@@ -127,14 +122,14 @@ fn handle(mut request: Request, db_path: Arc<String>) {
         else { match serde_json::from_str::<Value>(&body) {
             Ok(v) => { let id=v["id"].as_str().unwrap_or(""); let currency=v["currency"].as_str().unwrap_or("USD").to_uppercase();
                 if id.trim().is_empty()||id.len()>80||currency.len()!=3 { fail(400,"invalid_request","id and three-character currency are required") }
-                else { match open_db(&db_path).and_then(|db|db.execute("INSERT INTO accounts(id,currency) VALUES(?1,?2)",params![id,currency]).map(|_|db)) {
+                else { match db.execute("INSERT INTO accounts(id,currency) VALUES(?1,?2)",params![id,currency]) {
                     Ok(_) => json_response(201,json!({"id":id,"currency":currency,"balance_minor":0})), Err(e)=>fail(409,"conflict",e)
                 }} }, Err(e)=>fail(400,"invalid_request",e)
         }}
     } else if method == Method::Post && path == "/transfers" {
         let mut body=String::new();
         if request.as_reader().take(65537).read_to_string(&mut body).is_err()||body.len()>65536 { fail(400,"invalid_request","Invalid request body") }
-        else { transfer(&body,&request,&db_path) }
+        else { transfer(&body,&request,db) }
     } else { fail(404,"not_found","Route not found") };
     let _=request.respond(response);
 }
@@ -157,7 +152,7 @@ fn memory_core_benchmark(users: usize, seconds: u64) -> Response<std::io::Cursor
         "http_or_sqlite_included":false,"invariants":{"all_pairs_conserved":valid,"passed":valid}}))
 }
 
-fn transfer(body: &str, request: &Request, db_path: &str) -> Response<std::io::Cursor<Vec<u8>>> {
+fn transfer(body: &str, request: &Request, db: &mut Connection) -> Response<std::io::Cursor<Vec<u8>>> {
     let value: Value=match serde_json::from_str(body){Ok(v)=>v,Err(e)=>return fail(400,"invalid_request",e)};
     let source=value["from_account"].as_str().unwrap_or(""); let target=value["to_account"].as_str().unwrap_or("");
     let amount=match value["amount_minor"].as_i64(){Some(n) if n>0=>n,_=>return fail(400,"invalid_request","amount_minor must be a positive integer")};
@@ -165,7 +160,6 @@ fn transfer(body: &str, request: &Request, db_path: &str) -> Response<std::io::C
     let key=value["idempotency_key"].as_str().or_else(||request.headers().iter().find(|h|h.field.equiv("Idempotency-Key")).map(|h|h.value.as_str())).unwrap_or("");
     if key.is_empty()||key.len()>200||source.is_empty()||target.is_empty()||source==target||currency.len()!=3{return fail(400,"invalid_request","A key, distinct accounts, and three-character currency are required")}
     let hash=serde_json::to_string(&json!([source,target,amount,currency])).unwrap();
-    let mut db=match open_db(db_path){Ok(db)=>db,Err(e)=>return fail(500,"storage_error",e)};
     let tx=match db.transaction_with_behavior(TransactionBehavior::Immediate){Ok(tx)=>tx,Err(e)=>return fail(500,"storage_error",e)};
     let prior:Option<(String,String)>=tx.query_row("SELECT id,request_hash FROM transfers WHERE idempotency_key=?1",[key],|r|Ok((r.get(0)?,r.get(1)?))).optional().unwrap_or(None);
     if let Some((id,old_hash))=prior { if old_hash!=hash{return fail(409,"idempotency_conflict","Key was used for a different transfer")};let from=balance(&tx,source).unwrap_or(0);let to=balance(&tx,target).unwrap_or(0);drop(tx);return json_response(200,json!({"id":id,"status":"posted","idempotent_replay":true,"from_balance_minor":from,"to_balance_minor":to})); }
@@ -184,10 +178,37 @@ fn transfer(body: &str, request: &Request, db_path: &str) -> Response<std::io::C
 fn main() {
     let host=env::var("LEDGER_HOST").unwrap_or_else(|_|"127.0.0.1".into());
     let port=env::var("LEDGER_PORT").unwrap_or_else(|_|"8082".into());
-    let db=env::var("LEDGER_DB").unwrap_or_else(|_|"ledger-rust.sqlite3".into());
-    initialize(&db).expect("initialize SQLite ledger");
+    let db_path=env::var("LEDGER_DB").unwrap_or_else(|_|"ledger-rust.sqlite3".into());
+    initialize(&db_path).expect("initialize SQLite ledger");
     let server=Server::http(format!("{host}:{port}")).expect("bind HTTP server");
-    eprintln!("LedgerLab Rust listening on {host}:{port}");
-    let db=Arc::new(db);
-    for request in server.incoming_requests(){let db=Arc::clone(&db);thread::spawn(move||handle(request,db));}
+    let workers=env::var("LEDGER_THREADS").ok().and_then(|v|v.parse().ok())
+        .unwrap_or_else(||thread::available_parallelism().map(|n|n.get()).unwrap_or(4));
+    eprintln!("LedgerLab Rust listening on {host}:{port} ({workers} workers)");
+
+    let queue: Arc<(Mutex<VecDeque<Request>>, Condvar)> =
+        Arc::new((Mutex::new(VecDeque::new()), Condvar::new()));
+
+    for _ in 0..workers {
+        let queue = Arc::clone(&queue);
+        let mut db = open_db(&db_path).expect("worker opens its own SQLite connection");
+        thread::spawn(move || {
+            let (lock, cvar) = &*queue;
+            loop {
+                let request = {
+                    let mut deque = lock.lock().unwrap();
+                    loop {
+                        if let Some(request) = deque.pop_front() { break request; }
+                        deque = cvar.wait(deque).unwrap();
+                    }
+                };
+                handle(request, &mut db);
+            }
+        });
+    }
+
+    let (lock, cvar) = &*queue;
+    for request in server.incoming_requests() {
+        lock.lock().unwrap().push_back(request);
+        cvar.notify_one();
+    }
 }
