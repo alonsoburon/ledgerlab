@@ -1,0 +1,2899 @@
+[
+  {
+    "implementation": "python",
+    "protocol_version": 1,
+    "profile": "session",
+    "host": {
+      "system": "Linux",
+      "release": "7.2.6-arch2-1",
+      "machine": "x86_64",
+      "python": "3.14.7"
+    },
+    "workload": {
+      "profile": "session",
+      "users": 32,
+      "requested_seconds": 10.0,
+      "warmup_seconds": 2.0,
+      "actual_seconds": 10.0,
+      "wall_seconds": 12.909,
+      "account_pool": 32,
+      "operation_mix": "balance_read + statement_read + transfer",
+      "think_time_seconds": {
+        "balance_read": [
+          3.0,
+          7.0
+        ],
+        "statement_read": [
+          3.0,
+          8.0
+        ],
+        "transfer": [
+          5.0,
+          15.0
+        ]
+      }
+    },
+    "results": {
+      "successes": 69,
+      "errors": 0,
+      "attempts": 69,
+      "error_rate": 0.0,
+      "throughput_rps": 6.9,
+      "writes_per_second": 0.5,
+      "latency_ms": {
+        "p50": 1.21,
+        "p95": 1.694,
+        "p99": 1.918
+      },
+      "latency_by_operation": {
+        "balance_read": {
+          "samples": 32,
+          "p50": 1.202,
+          "p95": 1.631,
+          "p99": 1.862,
+          "max": 1.88
+        },
+        "statement_read": {
+          "samples": 32,
+          "p50": 1.207,
+          "p95": 1.363,
+          "p99": 1.817,
+          "max": 1.998
+        },
+        "transfer": {
+          "samples": 5,
+          "p50": 1.293,
+          "p95": 1.738,
+          "p99": 1.774,
+          "max": 1.783
+        }
+      }
+    },
+    "slo": {
+      "thresholds": {
+        "p95_ms": 500.0,
+        "p99_ms": 1000.0,
+        "error_rate": 0.01
+      },
+      "observed": {
+        "p95_ms": 1.694,
+        "p99_ms": 1.918,
+        "error_rate": 0.0
+      },
+      "passed": true,
+      "failures": []
+    },
+    "ledger_check": {
+      "http_status": 200,
+      "entry_count": 82,
+      "net_minor": 0,
+      "transfer_count": 41,
+      "invalid_transfer_groups": 0,
+      "balance_mismatch_accounts": 0
+    },
+    "invariant_check": {
+      "benchmark_accounts_conserved": true,
+      "all_transfers_have_two_balanced_entries": true,
+      "account_balances_match_journal": true,
+      "account_pool": 32
+    },
+    "error_samples": [],
+    "note": "Session profile models think-time virtual users and is the capacity figure; raw profile only measures the write ceiling. Results are implementation-stack measurements, not a universal language ranking.",
+    "resources": {
+      "generator": {
+        "cpu_seconds": 0.17,
+        "peak_rss_kb": 29780
+      },
+      "engine": {
+        "cpu_seconds": 10.72,
+        "peak_rss_kb": 31660
+      }
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 32,
+      "seconds": 10.002,
+      "successful_transfers": 6186400,
+      "throughput_ops_per_second": 618510.23,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "kind": "run",
+    "engine": "python",
+    "engine_runtime": "Python 3.14.7",
+    "build_seconds": 0.0,
+    "startup_seconds": 0.102,
+    "evaluation_setup_seconds": 26.135,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "lifecycle": "started -> benchmarked -> stopped",
+    "engine_pid": 246806,
+    "completed_at": "2026-10-02T23:43:39.403870+00:00"
+  },
+  {
+    "implementation": "rust",
+    "protocol_version": 1,
+    "profile": "session",
+    "host": {
+      "system": "Linux",
+      "release": "7.2.6-arch2-1",
+      "machine": "x86_64",
+      "python": "3.14.7"
+    },
+    "workload": {
+      "profile": "session",
+      "users": 32,
+      "requested_seconds": 10.0,
+      "warmup_seconds": 2.0,
+      "actual_seconds": 10.0,
+      "wall_seconds": 12.909,
+      "account_pool": 32,
+      "operation_mix": "balance_read + statement_read + transfer",
+      "think_time_seconds": {
+        "balance_read": [
+          3.0,
+          7.0
+        ],
+        "statement_read": [
+          3.0,
+          8.0
+        ],
+        "transfer": [
+          5.0,
+          15.0
+        ]
+      }
+    },
+    "results": {
+      "successes": 66,
+      "errors": 0,
+      "attempts": 66,
+      "error_rate": 0.0,
+      "throughput_rps": 6.6,
+      "writes_per_second": 0.2,
+      "latency_ms": {
+        "p50": 1.177,
+        "p95": 1.76,
+        "p99": 1.88
+      },
+      "latency_by_operation": {
+        "balance_read": {
+          "samples": 32,
+          "p50": 1.193,
+          "p95": 1.856,
+          "p99": 1.884,
+          "max": 1.888
+        },
+        "statement_read": {
+          "samples": 32,
+          "p50": 1.159,
+          "p95": 1.633,
+          "p99": 1.687,
+          "max": 1.704
+        },
+        "transfer": {
+          "samples": 2,
+          "p50": 1.456,
+          "p95": 1.48,
+          "p99": 1.482,
+          "max": 1.483
+        }
+      }
+    },
+    "slo": {
+      "thresholds": {
+        "p95_ms": 500.0,
+        "p99_ms": 1000.0,
+        "error_rate": 0.01
+      },
+      "observed": {
+        "p95_ms": 1.76,
+        "p99_ms": 1.88,
+        "error_rate": 0.0
+      },
+      "passed": true,
+      "failures": []
+    },
+    "ledger_check": {
+      "http_status": 200,
+      "balance_mismatch_accounts": 0,
+      "entry_count": 76,
+      "invalid_transfer_groups": 0,
+      "net_minor": 0,
+      "transfer_count": 38
+    },
+    "invariant_check": {
+      "benchmark_accounts_conserved": true,
+      "all_transfers_have_two_balanced_entries": true,
+      "account_balances_match_journal": true,
+      "account_pool": 32
+    },
+    "error_samples": [],
+    "note": "Session profile models think-time virtual users and is the capacity figure; raw profile only measures the write ceiling. Results are implementation-stack measurements, not a universal language ranking.",
+    "resources": {
+      "generator": {
+        "cpu_seconds": 0.17,
+        "peak_rss_kb": 29808
+      },
+      "engine": {
+        "cpu_seconds": 115.65,
+        "peak_rss_kb": 5896
+      }
+    },
+    "memory_core": {
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      },
+      "mode": "in_memory_core",
+      "seconds": 10.000469171,
+      "state_model": "independent thread-local account pair per worker",
+      "successful_transfers": 68206241,
+      "throughput_ops_per_second": 6820304.111109988,
+      "users": 32
+    },
+    "kind": "run",
+    "engine": "rust",
+    "engine_runtime": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "build_seconds": 0.341,
+    "startup_seconds": 0.052,
+    "evaluation_setup_seconds": 26.425,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "lifecycle": "started -> benchmarked -> stopped",
+    "engine_pid": 358557,
+    "completed_at": "2026-10-02T23:46:33.875719+00:00"
+  },
+  {
+    "implementation": "c",
+    "protocol_version": 1,
+    "profile": "session",
+    "host": {
+      "system": "Linux",
+      "release": "7.2.6-arch2-1",
+      "machine": "x86_64",
+      "python": "3.14.7"
+    },
+    "workload": {
+      "profile": "session",
+      "users": 32,
+      "requested_seconds": 10.0,
+      "warmup_seconds": 2.0,
+      "actual_seconds": 10.0,
+      "wall_seconds": 12.909,
+      "account_pool": 32,
+      "operation_mix": "balance_read + statement_read + transfer",
+      "think_time_seconds": {
+        "balance_read": [
+          3.0,
+          7.0
+        ],
+        "statement_read": [
+          3.0,
+          8.0
+        ],
+        "transfer": [
+          5.0,
+          15.0
+        ]
+      }
+    },
+    "results": {
+      "successes": 66,
+      "errors": 0,
+      "attempts": 66,
+      "error_rate": 0.0,
+      "throughput_rps": 6.6,
+      "writes_per_second": 0.2,
+      "latency_ms": {
+        "p50": 1.172,
+        "p95": 1.595,
+        "p99": 1.714
+      },
+      "latency_by_operation": {
+        "balance_read": {
+          "samples": 32,
+          "p50": 1.091,
+          "p95": 1.625,
+          "p99": 1.789,
+          "max": 1.858
+        },
+        "statement_read": {
+          "samples": 32,
+          "p50": 1.189,
+          "p95": 1.554,
+          "p99": 1.571,
+          "max": 1.574
+        },
+        "transfer": {
+          "samples": 2,
+          "p50": 1.318,
+          "p95": 1.414,
+          "p99": 1.423,
+          "max": 1.425
+        }
+      }
+    },
+    "slo": {
+      "thresholds": {
+        "p95_ms": 500.0,
+        "p99_ms": 1000.0,
+        "error_rate": 0.01
+      },
+      "observed": {
+        "p95_ms": 1.595,
+        "p99_ms": 1.714,
+        "error_rate": 0.0
+      },
+      "passed": true,
+      "failures": []
+    },
+    "ledger_check": {
+      "http_status": 200,
+      "entry_count": 76,
+      "net_minor": 0,
+      "transfer_count": 38,
+      "invalid_transfer_groups": 0,
+      "balance_mismatch_accounts": 0
+    },
+    "invariant_check": {
+      "benchmark_accounts_conserved": true,
+      "all_transfers_have_two_balanced_entries": true,
+      "account_balances_match_journal": true,
+      "account_pool": 32
+    },
+    "error_samples": [],
+    "note": "Session profile models think-time virtual users and is the capacity figure; raw profile only measures the write ceiling. Results are implementation-stack measurements, not a universal language ranking.",
+    "resources": {
+      "generator": {
+        "cpu_seconds": 0.17,
+        "peak_rss_kb": 29800
+      },
+      "engine": {
+        "cpu_seconds": 111.1,
+        "peak_rss_kb": 5116
+      }
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 32,
+      "seconds": 10.000538598,
+      "successful_transfers": 65167546,
+      "throughput_ops_per_second": 6516403.627803887,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "kind": "run",
+    "engine": "c",
+    "engine_runtime": "cc (GCC) 16.2.1 20260810",
+    "build_seconds": 0.253,
+    "startup_seconds": 0.051,
+    "evaluation_setup_seconds": 26.334,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "lifecycle": "started -> benchmarked -> stopped",
+    "engine_pid": 734870,
+    "completed_at": "2026-10-02T23:49:53.197722+00:00"
+  },
+  {
+    "implementation": "cobol",
+    "protocol_version": 1,
+    "profile": "session",
+    "host": {
+      "system": "Linux",
+      "release": "7.2.6-arch2-1",
+      "machine": "x86_64",
+      "python": "3.14.7"
+    },
+    "workload": {
+      "profile": "session",
+      "users": 32,
+      "requested_seconds": 10.0,
+      "warmup_seconds": 2.0,
+      "actual_seconds": 10.0,
+      "wall_seconds": 12.907,
+      "account_pool": 32,
+      "operation_mix": "balance_read + statement_read + transfer",
+      "think_time_seconds": {
+        "balance_read": [
+          3.0,
+          7.0
+        ],
+        "statement_read": [
+          3.0,
+          8.0
+        ],
+        "transfer": [
+          5.0,
+          15.0
+        ]
+      }
+    },
+    "results": {
+      "successes": 67,
+      "errors": 0,
+      "attempts": 67,
+      "error_rate": 0.0,
+      "throughput_rps": 6.7,
+      "writes_per_second": 0.2,
+      "latency_ms": {
+        "p50": 1.052,
+        "p95": 1.551,
+        "p99": 1.726
+      },
+      "latency_by_operation": {
+        "balance_read": {
+          "samples": 32,
+          "p50": 1.075,
+          "p95": 1.548,
+          "p99": 1.607,
+          "max": 1.631
+        },
+        "idempotent_replay": {
+          "samples": 1,
+          "p50": 0.646,
+          "p95": 0.646,
+          "p99": 0.646,
+          "max": 0.646
+        },
+        "statement_read": {
+          "samples": 32,
+          "p50": 1.029,
+          "p95": 1.521,
+          "p99": 1.562,
+          "max": 1.579
+        },
+        "transfer": {
+          "samples": 2,
+          "p50": 1.603,
+          "p95": 1.879,
+          "p99": 1.903,
+          "max": 1.909
+        }
+      }
+    },
+    "slo": {
+      "thresholds": {
+        "p95_ms": 500.0,
+        "p99_ms": 1000.0,
+        "error_rate": 0.01
+      },
+      "observed": {
+        "p95_ms": 1.551,
+        "p99_ms": 1.726,
+        "error_rate": 0.0
+      },
+      "passed": true,
+      "failures": []
+    },
+    "ledger_check": {
+      "http_status": 200,
+      "entry_count": 76,
+      "net_minor": 0,
+      "transfer_count": 38,
+      "invalid_transfer_groups": 0,
+      "balance_mismatch_accounts": 0
+    },
+    "invariant_check": {
+      "benchmark_accounts_conserved": true,
+      "all_transfers_have_two_balanced_entries": true,
+      "account_balances_match_journal": true,
+      "account_pool": 32
+    },
+    "error_samples": [],
+    "note": "Session profile models think-time virtual users and is the capacity figure; raw profile only measures the write ceiling. Results are implementation-stack measurements, not a universal language ranking.",
+    "resources": {
+      "generator": {
+        "cpu_seconds": 0.17,
+        "peak_rss_kb": 29796
+      },
+      "engine": {
+        "cpu_seconds": 91.64,
+        "peak_rss_kb": 8744
+      }
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 32,
+      "seconds": 10.000421139,
+      "successful_transfers": 11595885,
+      "throughput_ops_per_second": 1159539.6672624068,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "kind": "run",
+    "engine": "cobol",
+    "engine_runtime": "gcobol (GCC) 16.2.1 20260810 (COBOL core; C HTTP/SQLite adapter)",
+    "build_seconds": 0.32,
+    "startup_seconds": 0.051,
+    "evaluation_setup_seconds": 26.401,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "lifecycle": "started -> benchmarked -> stopped",
+    "engine_pid": 736054,
+    "completed_at": "2026-10-02T23:52:47.644951+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "python",
+    "profile": "raw",
+    "workload": {
+      "profile": "raw",
+      "seconds_per_level": 4.0,
+      "start": 64,
+      "max_users": 1024,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 64,
+        "throughput_rps": 1831.5,
+        "writes_per_second": 1831.5,
+        "latency_ms": {
+          "p50": 44.064,
+          "p95": 50.55,
+          "p99": 51.623
+        },
+        "error_rate": 0.0,
+        "successes": 7326,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 50.55,
+            "p99_ms": 51.623,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 128,
+        "throughput_rps": 1793.0,
+        "writes_per_second": 1793.0,
+        "latency_ms": {
+          "p50": 93.612,
+          "p95": 101.814,
+          "p99": 105.05
+        },
+        "error_rate": 0.0,
+        "successes": 7172,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 101.814,
+            "p99_ms": 105.05,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 256,
+        "throughput_rps": 1809.0,
+        "writes_per_second": 1809.0,
+        "latency_ms": {
+          "p50": 177.444,
+          "p95": 205.445,
+          "p99": 207.179
+        },
+        "error_rate": 0.0,
+        "successes": 7236,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 205.445,
+            "p99_ms": 207.179,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 1759.25,
+        "writes_per_second": 1759.25,
+        "latency_ms": {
+          "p50": 378.954,
+          "p95": 421.821,
+          "p99": 431.656
+        },
+        "error_rate": 0.0,
+        "successes": 7037,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 421.821,
+            "p99_ms": 431.656,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 640,
+        "throughput_rps": 1812.0,
+        "writes_per_second": 1812.0,
+        "latency_ms": {
+          "p50": 455.854,
+          "p95": 501.925,
+          "p99": 505.77
+        },
+        "error_rate": 0.0,
+        "successes": 7248,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 501.925,
+            "p99_ms": 505.77,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency"
+          ]
+        }
+      },
+      {
+        "users": 768,
+        "throughput_rps": 1773.0,
+        "writes_per_second": 1773.0,
+        "latency_ms": {
+          "p50": 556.865,
+          "p95": 616.934,
+          "p99": 619.378
+        },
+        "error_rate": 0.0,
+        "successes": 7092,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 616.934,
+            "p99_ms": 619.378,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency"
+          ]
+        }
+      },
+      {
+        "users": 1024,
+        "throughput_rps": 1746.75,
+        "writes_per_second": 1746.75,
+        "latency_ms": {
+          "p50": 757.212,
+          "p95": 816.316,
+          "p99": 818.057
+        },
+        "error_rate": 0.0,
+        "successes": 6987,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 816.316,
+            "p99_ms": 818.057,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency"
+          ]
+        }
+      }
+    ],
+    "capacity_users": 512,
+    "first_failing_users": 640,
+    "confirmation": {
+      "users": 512,
+      "throughput_rps": 1438.04,
+      "writes_per_second": 1438.04,
+      "latency_ms": {
+        "p50": 394.727,
+        "p95": 413.593,
+        "p99": 467.724
+      },
+      "error_rate": 0.0,
+      "successes": 35951,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 413.593,
+          "p99_ms": 467.724,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 128,
+      "seconds": 4.004,
+      "successful_transfers": 2450674,
+      "throughput_ops_per_second": 612025.31,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "engine_runtime": "Python 3.14.7",
+    "build_seconds": 0.0,
+    "startup_seconds": 0.103,
+    "evaluation_setup_seconds": 79.195,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 90.9,
+        "peak_rss_kb": 188912
+      },
+      "generator": {
+        "cpu_seconds": 26.86,
+        "peak_rss_kb": 36984
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 247328,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-02T23:44:59.507432+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "rust",
+    "profile": "raw",
+    "workload": {
+      "profile": "raw",
+      "seconds_per_level": 4.0,
+      "start": 64,
+      "max_users": 1024,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 64,
+        "throughput_rps": 4864.25,
+        "writes_per_second": 4864.25,
+        "latency_ms": {
+          "p50": 0.882,
+          "p95": 54.119,
+          "p99": 229.428
+        },
+        "error_rate": 0.0,
+        "successes": 19457,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 54.119,
+            "p99_ms": 229.428,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 128,
+        "throughput_rps": 5174.25,
+        "writes_per_second": 5174.25,
+        "latency_ms": {
+          "p50": 1.745,
+          "p95": 104.382,
+          "p99": 529.68
+        },
+        "error_rate": 0.0,
+        "successes": 20697,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 104.382,
+            "p99_ms": 529.68,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 256,
+        "throughput_rps": 5381.75,
+        "writes_per_second": 5381.75,
+        "latency_ms": {
+          "p50": 2.218,
+          "p95": 229.577,
+          "p99": 930.358
+        },
+        "error_rate": 0.0,
+        "successes": 21527,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 229.577,
+            "p99_ms": 930.358,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 320,
+        "throughput_rps": 5471.5,
+        "writes_per_second": 5471.5,
+        "latency_ms": {
+          "p50": 3.742,
+          "p95": 329.723,
+          "p99": 1130.316
+        },
+        "error_rate": 0.0,
+        "successes": 21886,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 329.723,
+            "p99_ms": 1130.316,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p99_latency"
+          ]
+        }
+      },
+      {
+        "users": 384,
+        "throughput_rps": 5464.0,
+        "writes_per_second": 5464.0,
+        "latency_ms": {
+          "p50": 4.011,
+          "p95": 430.001,
+          "p99": 1330.283
+        },
+        "error_rate": 0.0,
+        "successes": 21856,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 430.001,
+            "p99_ms": 1330.283,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p99_latency"
+          ]
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 5525.5,
+        "writes_per_second": 5525.5,
+        "latency_ms": {
+          "p50": 4.162,
+          "p95": 629.846,
+          "p99": 1630.426
+        },
+        "error_rate": 0.0,
+        "successes": 22102,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 629.846,
+            "p99_ms": 1630.426,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency",
+            "p99_latency"
+          ]
+        }
+      }
+    ],
+    "capacity_users": 128,
+    "first_failing_users": 320,
+    "confirmation": {
+      "users": 128,
+      "throughput_rps": 4128.04,
+      "writes_per_second": 4128.04,
+      "latency_ms": {
+        "p50": 1.771,
+        "p95": 129.25,
+        "p99": 629.665
+      },
+      "error_rate": 0.0,
+      "successes": 103201,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 129.25,
+          "p99_ms": 629.665,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      },
+      "mode": "in_memory_core",
+      "seconds": 5.003143008,
+      "state_model": "independent thread-local account pair per worker",
+      "successful_transfers": 33550234,
+      "throughput_ops_per_second": 6705831.503587514,
+      "users": 128
+    },
+    "engine_runtime": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "build_seconds": 0.042,
+    "startup_seconds": 0.052,
+    "evaluation_setup_seconds": 105.206,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 220.82,
+        "peak_rss_kb": 120640
+      },
+      "generator": {
+        "cpu_seconds": 81.74,
+        "peak_rss_kb": 35612
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 359031,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-02T23:48:19.762407+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "c",
+    "profile": "raw",
+    "workload": {
+      "profile": "raw",
+      "seconds_per_level": 4.0,
+      "start": 64,
+      "max_users": 1024,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 64,
+        "throughput_rps": 3782.25,
+        "writes_per_second": 3782.25,
+        "latency_ms": {
+          "p50": 20.09,
+          "p95": 24.235,
+          "p99": 24.995
+        },
+        "error_rate": 0.0,
+        "successes": 15129,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 24.235,
+            "p99_ms": 24.995,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 128,
+        "throughput_rps": 3803.25,
+        "writes_per_second": 3803.25,
+        "latency_ms": {
+          "p50": 40.194,
+          "p95": 48.521,
+          "p99": 50.326
+        },
+        "error_rate": 0.0,
+        "successes": 15213,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 48.521,
+            "p99_ms": 50.326,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 256,
+        "throughput_rps": 3687.75,
+        "writes_per_second": 3687.75,
+        "latency_ms": {
+          "p50": 82.24,
+          "p95": 104.113,
+          "p99": 107.041
+        },
+        "error_rate": 0.0,
+        "successes": 14751,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 104.113,
+            "p99_ms": 107.041,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 3687.0,
+        "writes_per_second": 3687.0,
+        "latency_ms": {
+          "p50": 159.651,
+          "p95": 197.623,
+          "p99": 201.332
+        },
+        "error_rate": 0.0,
+        "successes": 14748,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 197.623,
+            "p99_ms": 201.332,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 640,
+        "throughput_rps": 3632.5,
+        "writes_per_second": 3632.5,
+        "latency_ms": {
+          "p50": 179.038,
+          "p95": 205.855,
+          "p99": 1232.662
+        },
+        "error_rate": 0.0,
+        "successes": 14530,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 205.855,
+            "p99_ms": 1232.662,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p99_latency"
+          ]
+        }
+      },
+      {
+        "users": 768,
+        "throughput_rps": 3674.0,
+        "writes_per_second": 3674.0,
+        "latency_ms": {
+          "p50": 187.856,
+          "p95": 1114.106,
+          "p99": 1255.402
+        },
+        "error_rate": 0.0,
+        "successes": 14696,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1114.106,
+            "p99_ms": 1255.402,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency",
+            "p99_latency"
+          ]
+        }
+      },
+      {
+        "users": 1024,
+        "throughput_rps": 3690.5,
+        "writes_per_second": 3690.5,
+        "latency_ms": {
+          "p50": 193.486,
+          "p95": 1225.304,
+          "p99": 1982.952
+        },
+        "error_rate": 0.0,
+        "successes": 14762,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1225.304,
+            "p99_ms": 1982.952,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency",
+            "p99_latency"
+          ]
+        }
+      }
+    ],
+    "capacity_users": 512,
+    "first_failing_users": 640,
+    "confirmation": {
+      "users": 512,
+      "throughput_rps": 2945.2,
+      "writes_per_second": 2945.2,
+      "latency_ms": {
+        "p50": 186.646,
+        "p95": 198.271,
+        "p99": 212.413
+      },
+      "error_rate": 0.0,
+      "successes": 73630,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 198.271,
+          "p99_ms": 212.413,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 128,
+      "seconds": 4.00164594,
+      "successful_transfers": 27428558,
+      "throughput_ops_per_second": 6854319.050525494,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "engine_runtime": "cc (GCC) 16.2.1 20260810",
+    "build_seconds": 0.188,
+    "startup_seconds": 0.052,
+    "evaluation_setup_seconds": 80.333,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 118.87,
+        "peak_rss_kb": 9208
+      },
+      "generator": {
+        "cpu_seconds": 33.04,
+        "peak_rss_kb": 38356
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 735009,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-02T23:51:14.307824+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "cobol",
+    "profile": "raw",
+    "workload": {
+      "profile": "raw",
+      "seconds_per_level": 4.0,
+      "start": 64,
+      "max_users": 1024,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 64,
+        "throughput_rps": 3796.75,
+        "writes_per_second": 3796.75,
+        "latency_ms": {
+          "p50": 19.96,
+          "p95": 24.16,
+          "p99": 24.54
+        },
+        "error_rate": 0.0,
+        "successes": 15187,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 24.16,
+            "p99_ms": 24.54,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 128,
+        "throughput_rps": 3797.25,
+        "writes_per_second": 3797.25,
+        "latency_ms": {
+          "p50": 39.922,
+          "p95": 48.765,
+          "p99": 49.561
+        },
+        "error_rate": 0.0,
+        "successes": 15189,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 48.765,
+            "p99_ms": 49.561,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 256,
+        "throughput_rps": 3680.75,
+        "writes_per_second": 3680.75,
+        "latency_ms": {
+          "p50": 82.391,
+          "p95": 103.436,
+          "p99": 104.783
+        },
+        "error_rate": 0.0,
+        "successes": 14723,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 103.436,
+            "p99_ms": 104.783,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 3634.5,
+        "writes_per_second": 3634.5,
+        "latency_ms": {
+          "p50": 161.694,
+          "p95": 197.234,
+          "p99": 201.285
+        },
+        "error_rate": 0.0,
+        "successes": 14538,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 197.234,
+            "p99_ms": 201.285,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 640,
+        "throughput_rps": 3689.25,
+        "writes_per_second": 3689.25,
+        "latency_ms": {
+          "p50": 175.496,
+          "p95": 201.86,
+          "p99": 1233.58
+        },
+        "error_rate": 0.0,
+        "successes": 14757,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 201.86,
+            "p99_ms": 1233.58,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p99_latency"
+          ]
+        }
+      },
+      {
+        "users": 768,
+        "throughput_rps": 3664.5,
+        "writes_per_second": 3664.5,
+        "latency_ms": {
+          "p50": 190.236,
+          "p95": 1139.522,
+          "p99": 1252.755
+        },
+        "error_rate": 0.0,
+        "successes": 14658,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1139.522,
+            "p99_ms": 1252.755,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency",
+            "p99_latency"
+          ]
+        }
+      },
+      {
+        "users": 1024,
+        "throughput_rps": 3649.5,
+        "writes_per_second": 3649.5,
+        "latency_ms": {
+          "p50": 196.957,
+          "p95": 1226.312,
+          "p99": 2061.363
+        },
+        "error_rate": 0.0,
+        "successes": 14598,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1226.312,
+            "p99_ms": 2061.363,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency",
+            "p99_latency"
+          ]
+        }
+      }
+    ],
+    "capacity_users": 512,
+    "first_failing_users": 640,
+    "confirmation": {
+      "users": 512,
+      "throughput_rps": 2937.44,
+      "writes_per_second": 2937.44,
+      "latency_ms": {
+        "p50": 187.863,
+        "p95": 201.225,
+        "p99": 209.548
+      },
+      "error_rate": 0.0,
+      "successes": 73436,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 201.225,
+          "p99_ms": 209.548,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 128,
+      "seconds": 4.001076835,
+      "successful_transfers": 4754449,
+      "throughput_ops_per_second": 1188292.3513014715,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "engine_runtime": "gcobol (GCC) 16.2.1 20260810 (COBOL core; C HTTP/SQLite adapter)",
+    "build_seconds": 0.261,
+    "startup_seconds": 0.052,
+    "evaluation_setup_seconds": 80.659,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 112.6,
+        "peak_rss_kb": 13800
+      },
+      "generator": {
+        "cpu_seconds": 32.73,
+        "peak_rss_kb": 38208
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 736263,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-02T23:54:08.954098+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "python",
+    "profile": "session",
+    "workload": {
+      "profile": "session",
+      "seconds_per_level": 5.0,
+      "start": 256,
+      "max_users": 10240,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 256,
+        "throughput_rps": 77.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.826,
+          "p95": 1.755,
+          "p99": 2.13
+        },
+        "error_rate": 0.0,
+        "successes": 387,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.755,
+            "p99_ms": 2.13,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 149.8,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.657,
+          "p95": 1.371,
+          "p99": 1.813
+        },
+        "error_rate": 0.0,
+        "successes": 749,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.371,
+            "p99_ms": 1.813,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 1024,
+        "throughput_rps": 309.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.625,
+          "p95": 1.242,
+          "p99": 1.847
+        },
+        "error_rate": 0.0,
+        "successes": 1545,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.242,
+            "p99_ms": 1.847,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 2048,
+        "throughput_rps": 607.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.762,
+          "p95": 1.196,
+          "p99": 16.021
+        },
+        "error_rate": 0.0,
+        "successes": 3037,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.196,
+            "p99_ms": 16.021,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 4096,
+        "throughput_rps": 1231.6,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.755,
+          "p95": 26.679,
+          "p99": 43.62
+        },
+        "error_rate": 0.0,
+        "successes": 6158,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 26.679,
+            "p99_ms": 43.62,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 5120,
+        "throughput_rps": 1515.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 95.448,
+          "p95": 105.499,
+          "p99": 106.879
+        },
+        "error_rate": 0.0,
+        "successes": 7575,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 105.499,
+            "p99_ms": 106.879,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 6144,
+        "throughput_rps": 1739.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 105.495,
+          "p95": 1127.499,
+          "p99": 2078.085
+        },
+        "error_rate": 0.0,
+        "successes": 8695,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1127.499,
+            "p99_ms": 2078.085,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency",
+            "p99_latency"
+          ]
+        }
+      },
+      {
+        "users": 8192,
+        "throughput_rps": 2164.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 106.922,
+          "p95": 2251.478,
+          "p99": 3098.065
+        },
+        "error_rate": 0.0,
+        "successes": 10822,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 2251.478,
+            "p99_ms": 3098.065,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p95_latency",
+            "p99_latency"
+          ]
+        }
+      }
+    ],
+    "capacity_users": 5120,
+    "first_failing_users": 6144,
+    "confirmation": {
+      "users": 5120,
+      "throughput_rps": 740.92,
+      "writes_per_second": 52.8,
+      "latency_ms": {
+        "p50": 0.847,
+        "p95": 2.042,
+        "p99": 22.532
+      },
+      "error_rate": 0.0,
+      "successes": 18523,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 2.042,
+          "p99_ms": 22.532,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 128,
+      "seconds": 5.004,
+      "successful_transfers": 3002046,
+      "throughput_ops_per_second": 599926.31,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "engine_runtime": "Python 3.14.7",
+    "build_seconds": 0.0,
+    "startup_seconds": 0.103,
+    "evaluation_setup_seconds": 102.001,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 50.36,
+        "peak_rss_kb": 111872
+      },
+      "generator": {
+        "cpu_seconds": 18.59,
+        "peak_rss_kb": 85288
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 738773,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-03T00:01:30.130444+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "rust",
+    "profile": "session",
+    "workload": {
+      "profile": "session",
+      "seconds_per_level": 5.0,
+      "start": 256,
+      "max_users": 10240,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 256,
+        "throughput_rps": 75.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.744,
+          "p95": 1.387,
+          "p99": 1.612
+        },
+        "error_rate": 0.0,
+        "successes": 375,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.387,
+            "p99_ms": 1.612,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 156.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.706,
+          "p95": 1.319,
+          "p99": 1.522
+        },
+        "error_rate": 0.0,
+        "successes": 782,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.319,
+            "p99_ms": 1.522,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 1024,
+        "throughput_rps": 305.8,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.629,
+          "p95": 1.22,
+          "p99": 1.612
+        },
+        "error_rate": 0.0,
+        "successes": 1529,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.22,
+            "p99_ms": 1.612,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 2048,
+        "throughput_rps": 618.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.623,
+          "p95": 0.959,
+          "p99": 1.862
+        },
+        "error_rate": 0.0,
+        "successes": 3092,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 0.959,
+            "p99_ms": 1.862,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 4096,
+        "throughput_rps": 1232.6,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.661,
+          "p95": 1.699,
+          "p99": 15.169
+        },
+        "error_rate": 0.0,
+        "successes": 6163,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.699,
+            "p99_ms": 15.169,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 8192,
+        "throughput_rps": 2441.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.744,
+          "p95": 113.859,
+          "p99": 192.736
+        },
+        "error_rate": 0.0,
+        "successes": 12207,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 113.859,
+            "p99_ms": 192.736,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      }
+    ],
+    "capacity_users": 8192,
+    "first_failing_users": null,
+    "confirmation": {
+      "users": 8192,
+      "throughput_rps": 1187.12,
+      "writes_per_second": 88.76,
+      "latency_ms": {
+        "p50": 0.704,
+        "p95": 1.77,
+        "p99": 41.856
+      },
+      "error_rate": 0.0,
+      "successes": 29678,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 1.77,
+          "p99_ms": 41.856,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      },
+      "mode": "in_memory_core",
+      "seconds": 5.00340473,
+      "state_model": "independent thread-local account pair per worker",
+      "successful_transfers": 35787589,
+      "throughput_ops_per_second": 7152647.233476954,
+      "users": 128
+    },
+    "engine_runtime": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "build_seconds": 0.138,
+    "startup_seconds": 0.052,
+    "evaluation_setup_seconds": 86.315,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 84.73,
+        "peak_rss_kb": 113736
+      },
+      "generator": {
+        "cpu_seconds": 15.52,
+        "peak_rss_kb": 69260
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 802459,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-03T00:02:56.501499+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "c",
+    "profile": "session",
+    "workload": {
+      "profile": "session",
+      "seconds_per_level": 5.0,
+      "start": 256,
+      "max_users": 10240,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 256,
+        "throughput_rps": 77.2,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.612,
+          "p95": 1.479,
+          "p99": 1.698
+        },
+        "error_rate": 0.0,
+        "successes": 386,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.479,
+            "p99_ms": 1.698,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 158.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.564,
+          "p95": 1.328,
+          "p99": 1.656
+        },
+        "error_rate": 0.0,
+        "successes": 790,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.328,
+            "p99_ms": 1.656,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 1024,
+        "throughput_rps": 310.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.538,
+          "p95": 1.185,
+          "p99": 1.679
+        },
+        "error_rate": 0.0,
+        "successes": 1552,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.185,
+            "p99_ms": 1.679,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 2048,
+        "throughput_rps": 616.8,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.563,
+          "p95": 1.14,
+          "p99": 1.866
+        },
+        "error_rate": 0.0,
+        "successes": 3084,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.14,
+            "p99_ms": 1.866,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 4096,
+        "throughput_rps": 1235.8,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.687,
+          "p95": 1.476,
+          "p99": 25.711
+        },
+        "error_rate": 0.0,
+        "successes": 6179,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.476,
+            "p99_ms": 25.711,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 6144,
+        "throughput_rps": 1859.4,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.71,
+          "p95": 31.457,
+          "p99": 67.42
+        },
+        "error_rate": 0.0,
+        "successes": 9297,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 31.457,
+            "p99_ms": 67.42,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 7168,
+        "throughput_rps": 2156.8,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.774,
+          "p95": 64.04,
+          "p99": 94.547
+        },
+        "error_rate": 0.0,
+        "successes": 10784,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 64.04,
+            "p99_ms": 94.547,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 8192,
+        "throughput_rps": 2433.8,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 1.004,
+          "p95": 113.07,
+          "p99": 1020.282
+        },
+        "error_rate": 0.0,
+        "successes": 12169,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 113.07,
+            "p99_ms": 1020.282,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p99_latency"
+          ]
+        }
+      }
+    ],
+    "capacity_users": 7168,
+    "first_failing_users": 8192,
+    "confirmation": {
+      "users": 7168,
+      "throughput_rps": 1043.36,
+      "writes_per_second": 78.0,
+      "latency_ms": {
+        "p50": 0.72,
+        "p95": 1.889,
+        "p99": 40.554
+      },
+      "error_rate": 0.0,
+      "successes": 26084,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 1.889,
+          "p99_ms": 40.554,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 128,
+      "seconds": 5.00096113,
+      "successful_transfers": 35951891,
+      "throughput_ops_per_second": 7188996.287999542,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "engine_runtime": "cc (GCC) 16.2.1 20260810",
+    "build_seconds": 0.187,
+    "startup_seconds": 0.052,
+    "evaluation_setup_seconds": 101.403,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 79.81,
+        "peak_rss_kb": 7512
+      },
+      "generator": {
+        "cpu_seconds": 19.53,
+        "peak_rss_kb": 68984
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 861991,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-03T00:04:39.646877+00:00"
+  },
+  {
+    "kind": "capacity",
+    "engine": "cobol",
+    "profile": "session",
+    "workload": {
+      "profile": "session",
+      "seconds_per_level": 5.0,
+      "start": 256,
+      "max_users": 10240,
+      "confirm_seconds": 25.0
+    },
+    "slo": {
+      "p95_ms": 500.0,
+      "p99_ms": 1000.0,
+      "error_rate": 0.01
+    },
+    "curve": [
+      {
+        "users": 256,
+        "throughput_rps": 76.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.607,
+          "p95": 1.151,
+          "p99": 1.366
+        },
+        "error_rate": 0.0,
+        "successes": 380,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.151,
+            "p99_ms": 1.366,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 512,
+        "throughput_rps": 154.6,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.538,
+          "p95": 1.192,
+          "p99": 1.465
+        },
+        "error_rate": 0.0,
+        "successes": 773,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.192,
+            "p99_ms": 1.465,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 1024,
+        "throughput_rps": 309.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.535,
+          "p95": 1.238,
+          "p99": 1.714
+        },
+        "error_rate": 0.0,
+        "successes": 1545,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.238,
+            "p99_ms": 1.714,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 2048,
+        "throughput_rps": 613.2,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.556,
+          "p95": 1.061,
+          "p99": 2.217
+        },
+        "error_rate": 0.0,
+        "successes": 3066,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.061,
+            "p99_ms": 2.217,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 4096,
+        "throughput_rps": 1227.8,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.685,
+          "p95": 1.564,
+          "p99": 26.32
+        },
+        "error_rate": 0.0,
+        "successes": 6139,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 1.564,
+            "p99_ms": 26.32,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 6144,
+        "throughput_rps": 1828.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.652,
+          "p95": 31.051,
+          "p99": 65.616
+        },
+        "error_rate": 0.0,
+        "successes": 9140,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 31.051,
+            "p99_ms": 65.616,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 7168,
+        "throughput_rps": 2130.0,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.734,
+          "p95": 72.495,
+          "p99": 99.28
+        },
+        "error_rate": 0.0,
+        "successes": 10650,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 72.495,
+            "p99_ms": 99.28,
+            "error_rate": 0.0
+          },
+          "passed": true,
+          "failures": []
+        }
+      },
+      {
+        "users": 8192,
+        "throughput_rps": 2455.6,
+        "writes_per_second": 0.0,
+        "latency_ms": {
+          "p50": 0.977,
+          "p95": 105.398,
+          "p99": 1051.756
+        },
+        "error_rate": 0.0,
+        "successes": 12278,
+        "errors": 0,
+        "slo": {
+          "thresholds": {
+            "p95_ms": 500.0,
+            "p99_ms": 1000.0,
+            "error_rate": 0.01
+          },
+          "observed": {
+            "p95_ms": 105.398,
+            "p99_ms": 1051.756,
+            "error_rate": 0.0
+          },
+          "passed": false,
+          "failures": [
+            "p99_latency"
+          ]
+        }
+      }
+    ],
+    "capacity_users": 7168,
+    "first_failing_users": 8192,
+    "confirmation": {
+      "users": 7168,
+      "throughput_rps": 1037.76,
+      "writes_per_second": 76.28,
+      "latency_ms": {
+        "p50": 0.72,
+        "p95": 1.882,
+        "p99": 42.898
+      },
+      "error_rate": 0.0,
+      "successes": 25944,
+      "errors": 0,
+      "slo": {
+        "thresholds": {
+          "p95_ms": 500.0,
+          "p99_ms": 1000.0,
+          "error_rate": 0.01
+        },
+        "observed": {
+          "p95_ms": 1.882,
+          "p99_ms": 42.898,
+          "error_rate": 0.0
+        },
+        "passed": true,
+        "failures": []
+      },
+      "confirmation_seconds": 25.0,
+      "confirmed": true
+    },
+    "memory_core": {
+      "mode": "in_memory_core",
+      "users": 128,
+      "seconds": 5.001217534,
+      "successful_transfers": 6190525,
+      "throughput_ops_per_second": 1237803.5864096447,
+      "state_model": "independent thread-local account pair per worker",
+      "http_or_sqlite_included": false,
+      "invariants": {
+        "all_pairs_conserved": true,
+        "passed": true
+      }
+    },
+    "engine_runtime": "gcobol (GCC) 16.2.1 20260810 (COBOL core; C HTTP/SQLite adapter)",
+    "build_seconds": 0.289,
+    "startup_seconds": 0.052,
+    "evaluation_setup_seconds": 101.496,
+    "conformance": {
+      "passed": true,
+      "checks": {
+        "health_identity": true,
+        "account_and_ledger_reads": true,
+        "idempotent_replay": true,
+        "idempotency_conflict": true,
+        "insufficient_funds": true,
+        "currency_mismatch": true
+      }
+    },
+    "resources": {
+      "engine": {
+        "cpu_seconds": 72.08,
+        "peak_rss_kb": 10800
+      },
+      "generator": {
+        "cpu_seconds": 19.36,
+        "peak_rss_kb": 68988
+      }
+    },
+    "lifecycle": "started -> warmed -> capacity -> confirmed -> stopped",
+    "engine_pid": 862471,
+    "note": "Adaptive capacity: warm up, double concurrency until an SLO fails, refine the knee, then confirm with a longer soak run; specific to this host and workload.",
+    "completed_at": "2026-10-03T00:06:21.825344+00:00"
+  }
+]

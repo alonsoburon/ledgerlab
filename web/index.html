@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LedgerLab · Managed evaluations</title>
+<style>
+:root{--bg:#f4f5f7;--panel:#fff;--ink:#101828;--muted:#667085;--line:#d0d5dd;--strong:#98a2b3;--accent:#1f3a5f;--ok:#067647;--bad:#b42318;--warn:#b54708}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.num,td.n,th.n{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+header.top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+header.top h1{margin:0;font-size:15px;font-weight:650;letter-spacing:.02em}
+header.top p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.host{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;text-transform:uppercase;letter-spacing:.08em}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;max-width:1280px;margin:0 auto;padding:16px 20px 48px}
+aside{background:var(--panel);border:1px solid var(--line);padding:12px}
+.side-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+nav.engines{display:grid;gap:6px}
+.engine{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;padding:8px 9px;background:#fff;border:1px solid var(--line);cursor:pointer;color:var(--ink);font:inherit}
+.engine:hover:not(:disabled){border-color:var(--strong)}
+.engine[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.engine:disabled{opacity:.45;cursor:not-allowed}
+.engine small{display:block;color:var(--muted);font-size:11px}
+.engine[aria-pressed="true"] small{color:#c7d2de}
+.dot{width:8px;height:8px;border:1px solid var(--muted);background:#fff}
+.dot.ready{background:var(--ok);border-color:var(--ok)}
+main{display:grid;gap:16px;align-content:start}
+.box{background:var(--panel);border:1px solid var(--line);padding:14px 16px}
+.box h2{margin:0 0 12px;font-size:13px;font-weight:650;display:flex;justify-content:space-between;align-items:center}
+.box h2 .tag{font-size:11px;font-weight:500;color:var(--muted)}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label.field{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+input,select{font:inherit;padding:7px 8px;border:1px solid var(--line);background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+button.act{font:inherit;padding:8px 14px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button.act.secondary{background:#fff;color:var(--accent)}
+button.act:disabled{opacity:.5;cursor:not-allowed}
+.progress{margin-top:14px;display:none}
+.progress.on{display:block}
+.progress-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
+.track{height:10px;background:#eaecf0;border:1px solid var(--line)}
+.fill{height:100%;width:0;background:var(--accent);transition:width .2s linear}
+.muted{color:var(--muted)}
+.badge{display:inline-block;font-size:11px;font-weight:650;letter-spacing:.06em;padding:3px 8px;border:1px solid}
+.badge.ok{color:var(--ok);border-color:var(--ok);background:#ecfdf3}
+.badge.bad{color:var(--bad);border-color:var(--bad);background:#fef3f2}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right}
+tr.fail td{background:#fef3f2}
+.table-wrap{overflow-x:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.card{border:1px solid var(--line);padding:9px 11px}
+.card .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.card .v{font-size:20px;margin-top:2px}
+.card .s{font-size:11px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.layout{grid-template-columns:1fr}.cols{grid-template-columns:1fr}}
+svg.chart{width:100%;height:auto;display:block;border:1px solid var(--line);background:#fff}
+ul.checks{margin:0;padding-left:16px;font-size:13px}
+ul.checks li{color:var(--ok)}
+ul.checks li.no{color:var(--bad)}
+.error{color:var(--bad)}
+.section-sub{font-size:12px;color:var(--muted);margin:-6px 0 12px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div><h1>LedgerLab</h1><p>Portable dual-entry ledger benchmark · managed engine evaluations</p></div>
+  <div class="host" id="host">local</div>
+</header>
+<div class="layout">
+  <aside>
+    <div class="side-label">Engines</div>
+    <nav class="engines" id="engines" aria-label="Engine implementations"></nav>
+  </aside>
+  <main>
+    <section class="box">
+      <h2>Evaluation settings <span class="tag" id="engine-name">loading…</span></h2>
+      <form class="grid" id="settings">
+        <label class="field">Profile
+          <select id="profile">
+            <option value="session">session · virtual users</option>
+            <option value="raw">raw · write ceiling</option>
+          </select>
+        </label>
+        <label class="field">Virtual users<input id="users" type="number" min="1" max="256" value="8"></label>
+        <label class="field">Duration · seconds<input id="seconds" type="number" min="1" max="30" value="10"></label>
+        <label class="field">p95 SLO · ms<input id="slo-p95" type="number" min="1" value="500"></label>
+        <label class="field">p99 SLO · ms<input id="slo-p99" type="number" min="1" value="1000"></label>
+        <label class="field">Error SLO · %<input id="slo-error" type="number" min="0" max="100" step="0.1" value="1"></label>
+      </form>
+      <div class="actions">
+        <button class="act" id="run">Run evaluation</button>
+        <button class="act secondary" id="capacity">Find capacity</button>
+      </div>
+      <div class="progress" id="progress">
+        <div class="progress-head"><span id="phase">Idle</span><span><b id="percent">0%</b> · <span id="elapsed">0.0s</span></span></div>
+        <div class="track"><div class="fill" id="fill"></div></div>
+      </div>
+    </section>
+
+    <section class="box">
+      <h2>Result <span class="tag" id="result-tag"></span></h2>
+      <div id="result" class="muted">No evaluation yet.</div>
+    </section>
+
+    <section class="box">
+      <h2>Saturation curve</h2>
+      <p class="section-sub">Throughput and p95 latency across concurrency levels. Failing levels are marked red.</p>
+      <div id="curve" class="muted">Run a capacity sweep to plot the curve.</div>
+    </section>
+
+    <section class="box">
+      <h2>History <span class="tag">latest 12 runs and sweeps</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Completed</th><th>Kind</th><th>Engine</th><th>Profile</th><th class="r">Users</th><th class="r">Duration</th><th class="r">req/s</th><th class="r">p95</th><th class="r">p99</th><th class="r">Err %</th><th>SLO</th></tr></thead>
+          <tbody id="history"><tr><td colspan="11" class="muted">No evaluations recorded.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let engines = [], selected = null, pollTimer = null, elapsedTimer = null, startedAt = 0, historyCache = [];
+
+async function api(path, options = {}) {
+  const response = await fetch(path, options);
+  let data = {};
+  try { data = await response.json(); } catch (_) {}
+  if (!response.ok) throw new Error(data.error?.message || `HTTP ${response.status}`);
+  return data;
+}
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = (value, digits = 0) => value === null || value === undefined ? '—' : Number(value).toLocaleString(undefined, {minimumFractionDigits: digits, maximumFractionDigits: digits});
+const kb = value => value === null || value === undefined ? '—' : (value >= 1024 ? (value / 1024).toFixed(0) + ' MB' : value + ' KB');
+const cpu = value => value === null || value === undefined ? '—' : Number(value).toFixed(1) + 's';
+
+function sloPayload() {
+  return {
+    p95_ms: Number($('slo-p95').value),
+    p99_ms: Number($('slo-p99').value),
+    error_rate: Number($('slo-error').value) / 100,
+  };
+}
+
+async function init() {
+  try {
+    const data = await api('/evaluations/engines');
+    engines = data.engines;
+    selected = engines.find(engine => engine.available)?.id || engines[0]?.id || null;
+    $('host').textContent = location.host;
+    renderEngines();
+    updateSelection();
+    await refreshHistory();
+  } catch (error) {
+    $('engine-name').textContent = 'unavailable';
+    $('result').innerHTML = `<span class="error">${esc(error.message)}</span>`;
+  }
+}
+
+function renderEngines() {
+  $('engines').replaceChildren(...engines.map(engine => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'engine';
+    button.disabled = !engine.available;
+    button.setAttribute('aria-pressed', String(engine.id === selected));
+    button.innerHTML = `<span>${esc(engine.name)}<small>${esc(engine.available ? engine.note : 'toolchain missing')}</small></span><span class="dot${engine.available ? ' ready' : ''}"></span>`;
+    button.onclick = () => { selected = engine.id; renderEngines(); updateSelection(); showSelectedResult(); };
+    return button;
+  }));
+}
+
+function updateSelection() {
+  const engine = engines.find(item => item.id === selected);
+  if (!engine) return;
+  $('engine-name').textContent = engine.name;
+  const busy = Boolean(pollTimer);
+  $('run').disabled = !engine.available || busy;
+  $('capacity').disabled = !engine.available || busy;
+}
+
+function setProgress(value, phase) {
+  const progress = Math.max(0, Math.min(100, Number(value) || 0));
+  $('progress').classList.add('on');
+  $('fill').style.width = progress + '%';
+  $('percent').textContent = Math.round(progress) + '%';
+  $('phase').textContent = phase || 'Working';
+}
+
+function startJob(kind) {
+  const engine = engines.find(item => item.id === selected);
+  if (!engine?.available) return;
+  const profile = $('profile').value;
+  const slo = sloPayload();
+  if (kind === 'capacity') {
+    const seconds = Math.min(30, Math.max(1, Number($('seconds').value) || 5));
+    return { engine, path: `/evaluations/${engine.id}/capacity`, body: { profile, seconds, slo }, label: 'Capacity' };
+  }
+  const users = Number($('users').value), seconds = Number($('seconds').value);
+  if (!Number.isInteger(users) || users < 1 || users > 256 || !Number.isInteger(seconds) || seconds < 1 || seconds > 30) {
+    setProgress(0, 'Use 1–256 users and 1–30 seconds'); $('progress').classList.add('on'); return null;
+  }
+  return { engine, path: `/evaluations/${engine.id}`, body: { profile, users, seconds, slo }, label: 'Evaluation' };
+}
+
+async function launch(kind) {
+  const job = startJob(kind);
+  if (!job) return;
+  pollTimer = 'starting';
+  updateSelection();
+  $('result-tag').textContent = 'running…';
+  startedAt = Date.now();
+  $('elapsed').textContent = '0.0s';
+  elapsedTimer = setInterval(() => { $('elapsed').textContent = ((Date.now() - startedAt) / 1000).toFixed(1) + 's'; }, 100);
+  setProgress(1, 'Queued');
+  try {
+    const accepted = await api(job.path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(job.body) });
+    pollTimer = accepted.job_id;
+    updateSelection();
+    while (true) {
+      const status = await api(`/evaluations/jobs/${accepted.job_id}`);
+      setProgress(status.progress, status.phase);
+      if (status.status === 'completed') { renderResult(status.result); await refreshHistory(); break; }
+      if (status.status === 'failed') throw new Error(status.error || 'Evaluation failed');
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+  } catch (error) {
+    setProgress(100, 'Failed');
+    $('result').innerHTML = `<span class="error">${esc(error.message)}</span>`;
+    $('result-tag').textContent = 'failed';
+  } finally {
+    clearInterval(elapsedTimer);
+    pollTimer = null;
+    updateSelection();
+  }
+}
+
+function badge(passed, label = '') {
+  return `<span class="badge ${passed ? 'ok' : 'bad'}">${passed ? 'PASS' : 'FAIL'}${label ? ' · ' + esc(label) : ''}</span>`;
+}
+
+function clearCurve() {
+  $('curve').className = 'muted';
+  $('curve').textContent = 'Run a capacity sweep to plot the curve.';
+  $('result-tag').textContent = '';
+}
+
+function showSelectedResult() {
+  const match = historyCache.find(entry => entry.engine === selected);
+  if (match) { renderResult(match); return; }
+  clearCurve();
+  $('result').className = 'muted';
+  $('result').textContent = 'No evaluation recorded for this engine yet.';
+}
+
+function renderResult(result) {
+  clearCurve();
+  if (!result) { $('result').className = 'muted'; $('result').textContent = 'No evaluation yet.'; return; }
+  $('result').className = '';
+  if (result.kind === 'sweep' || result.kind === 'capacity') { renderSweep(result); return; }
+  renderRun(result);
+}
+
+function renderRun(result) {
+  const r = result.results, slo = result.slo || {}, ledger = result.ledger_check || {}, inv = result.invariant_check || {}, res = result.resources || {};
+  const checks = result.conformance?.checks || {};
+  const passed = slo.passed !== false;
+  $('result-tag').innerHTML = `${esc(result.engine)} · ${esc(result.profile || 'session')} · ${badge(passed, (slo.failures || []).join(', ') || 'all SLOs met')}`;
+  const cards = `
+    <div class="cards">
+      <div class="card"><div class="k">Throughput</div><div class="v num">${num(r.throughput_rps, 0)}</div><div class="s">req/s managed</div></div>
+      <div class="card"><div class="k">Writes</div><div class="v num">${num(r.writes_per_second, 0)}</div><div class="s">transfers/s</div></div>
+      <div class="card"><div class="k">p95 latency</div><div class="v num">${num(r.latency_ms.p95, 2)}</div><div class="s">ms</div></div>
+      <div class="card"><div class="k">p99 latency</div><div class="v num">${num(r.latency_ms.p99, 2)}</div><div class="s">ms</div></div>
+      <div class="card"><div class="k">Errors</div><div class="v num">${num(r.errors)}</div><div class="s">${(r.error_rate * 100).toFixed(2)}% of ${num(r.attempts)}</div></div>
+      <div class="card"><div class="k">In-memory core</div><div class="v num">${num(result.memory_core?.throughput_ops_per_second, 0)}</div><div class="s">ops/s · no HTTP/SQLite</div></div>
+    </div>`;
+  const opRows = Object.entries(r.latency_by_operation || {}).map(([op, m]) =>
+    `<tr><td>${esc(op)}</td><td class="n r">${num(m.samples)}</td><td class="n r">${num(m.p50, 2)}</td><td class="n r">${num(m.p95, 2)}</td><td class="n r">${num(m.p99, 2)}</td><td class="n r">${num(m.max, 2)}</td></tr>`).join('');
+  const conformance = Object.entries(checks).map(([name, ok]) => `<li class="${ok ? '' : 'no'}">${ok ? '✓' : '×'} ${esc(name)}</li>`).join('');
+  const invariants = [
+    ['Accounts balance conserved', inv.benchmark_accounts_conserved],
+    ['Every transfer has two balanced entries', inv.all_transfers_have_two_balanced_entries],
+    ['Cached balances match journal', inv.account_balances_match_journal],
+  ].map(([name, ok]) => `<li class="${ok ? '' : 'no'}">${ok ? '✓' : '×'} ${esc(name)}</li>`).join('');
+  $('result').innerHTML = `
+    ${cards}
+    <div class="cols">
+      <div>
+        <h2 style="font-size:12px;margin:4px 0 8px">Latency by operation · ms</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Operation</th><th class="r">Samples</th><th class="r">p50</th><th class="r">p95</th><th class="r">p99</th><th class="r">max</th></tr></thead>
+          <tbody>${opRows || '<tr><td colspan="6" class="muted">No operations recorded.</td></tr>'}</tbody>
+        </table></div>
+      </div>
+      <div>
+        <h2 style="font-size:12px;margin:4px 0 8px">Ledger & conformance</h2>
+        <ul class="checks">${invariants}</ul>
+        <ul class="checks" style="margin-top:6px">${conformance}</ul>
+        <table style="margin-top:8px">
+          <tbody>
+            <tr><td class="muted">Journal entries</td><td class="n r">${num(ledger.entry_count)}</td></tr>
+            <tr><td class="muted">Transfers</td><td class="n r">${num(ledger.transfer_count)}</td></tr>
+            <tr><td class="muted">Net minor units</td><td class="n r">${num(ledger.net_minor)}</td></tr>
+            <tr><td class="muted">Build / startup</td><td class="n r">${num(result.build_seconds, 2)}s / ${num(result.startup_seconds, 2)}s</td></tr>
+            <tr><td class="muted">Runtime</td><td class="r">${esc(result.engine_runtime)}</td></tr>
+            <tr><td class="muted">CPU · engine / generator</td><td class="n r">${cpu(res.engine?.cpu_seconds)} / ${cpu(res.generator?.cpu_seconds)}</td></tr>
+            <tr><td class="muted">Peak RSS · engine / generator</td><td class="n r">${kb(res.engine?.peak_rss_kb)} / ${kb(res.generator?.peak_rss_kb)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderSweep(result) {
+  const curve = result.curve || [];
+  const capacity = result.capacity_users, failing = result.first_failing_users, conf = result.confirmation, res = result.resources || {};
+  $('result-tag').innerHTML = `${esc(result.engine)} · ${esc(result.kind)} · ${capacity ? badge(true, 'capacity ' + capacity + ' users' + (conf ? (conf.confirmed ? ' · confirmed' : '') : '')) : badge(false, 'no passing level')}`;
+  const rows = curve.map(entry => `
+    <tr class="${entry.slo.passed ? '' : 'fail'}">
+      <td class="n r">${num(entry.users)}</td>
+      <td class="n r">${num(entry.throughput_rps, 0)}</td>
+      <td class="n r">${num(entry.writes_per_second, 0)}</td>
+      <td class="n r">${num(entry.latency_ms.p50, 2)}</td>
+      <td class="n r">${num(entry.latency_ms.p95, 2)}</td>
+      <td class="n r">${num(entry.latency_ms.p99, 2)}</td>
+      <td class="n r">${(entry.error_rate * 100).toFixed(2)}</td>
+      <td>${entry.slo.passed ? 'PASS' : 'FAIL · ' + esc(entry.slo.failures.join(', '))}</td>
+    </tr>`).join('');
+  $('result').innerHTML = `
+    <div class="cards">
+      <div class="card"><div class="k">Capacity (SLO)</div><div class="v num">${num(capacity)}</div><div class="s">highest passing virtual users</div></div>
+      <div class="card"><div class="k">First failing</div><div class="v num">${num(failing)}</div><div class="s">knee of the curve</div></div>
+      <div class="card"><div class="k">Levels</div><div class="v num">${curve.length}</div><div class="s">${result.workload.seconds_per_level}s each</div></div>
+      <div class="card"><div class="k">SLO</div><div class="v" style="font-size:14px">p95 ≤ ${num(result.slo.p95_ms)}ms · p99 ≤ ${num(result.slo.p99_ms)}ms</div><div class="s">errors ≤ ${(result.slo.error_rate * 100).toFixed(1)}%</div></div>
+      ${conf ? `<div class="card"><div class="k">Confirmation soak</div><div class="v num">${num(conf.users)}<span style="font-size:13px"> users · ${num(conf.confirmation_seconds)}s</span></div><div class="s">${conf.confirmed ? 'met SLO · confirmed' : 'breached SLO · stepped down'}</div></div>` : ''}
+      <div class="card"><div class="k">CPU · engine / gen</div><div class="v" style="font-size:16px">${cpu(res.engine?.cpu_seconds)} / ${cpu(res.generator?.cpu_seconds)}</div><div class="s">peak RSS ${kb(res.engine?.peak_rss_kb)} / ${kb(res.generator?.peak_rss_kb)}</div></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th class="r">Users</th><th class="r">req/s</th><th class="r">writes/s</th><th class="r">p50</th><th class="r">p95</th><th class="r">p99</th><th class="r">Err %</th><th>SLO</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  renderCurve(curve);
+}
+
+function renderCurve(curve) {
+  if (!curve.length) { $('curve').className = 'muted'; $('curve').textContent = 'Run a capacity sweep to plot the curve.'; return; }
+  const width = 720, height = 260, pad = 44;
+  const xs = curve.map(entry => entry.users);
+  const maxRps = Math.max(1, ...curve.map(entry => entry.throughput_rps || 0));
+  const maxP95 = Math.max(1, ...curve.map(entry => entry.latency_ms.p95 || 0));
+  const xAt = index => pad + (width - 2 * pad) * (curve.length === 1 ? 0.5 : index / (curve.length - 1));
+  const yRps = value => height - pad - (height - 2 * pad) * (value / maxRps);
+  const yP95 = value => height - pad - (height - 2 * pad) * (value / maxP95);
+  const rpsLine = curve.map((entry, i) => `${xAt(i).toFixed(1)},${yRps(entry.throughput_rps).toFixed(1)}`).join(' ');
+  const p95Line = curve.map((entry, i) => `${xAt(i).toFixed(1)},${yP95(entry.latency_ms.p95 || 0).toFixed(1)}`).join(' ');
+  const points = curve.map((entry, i) => `<circle cx="${xAt(i).toFixed(1)}" cy="${yRps(entry.throughput_rps).toFixed(1)}" r="3.5" fill="${entry.slo.passed ? '#1f3a5f' : '#b42318'}"/>`).join('');
+  const xLabels = curve.map((entry, i) => `<text x="${xAt(i).toFixed(1)}" y="${height - 14}" text-anchor="middle" font-size="11" fill="#667085">${entry.users}</text>`).join('');
+  const legend = `<rect x="${pad}" y="12" width="10" height="10" fill="#1f3a5f"/><text x="${pad + 16}" y="21" font-size="11" fill="#101828">throughput req/s (left)</text><rect x="${pad + 190}" y="12" width="10" height="10" fill="#b54708"/><text x="${pad + 206}" y="21" font-size="11" fill="#101828">p95 ms (right scale)</text><circle cx="${pad + 330}" cy="17" r="4" fill="#b42318"/><text x="${pad + 340}" y="21" font-size="11" fill="#101828">SLO fail</text>`;
+  $('curve').className = '';
+  $('curve').innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Saturation curve">
+    ${legend}
+    <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#d0d5dd"/>
+    <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="#d0d5dd"/>
+    <polyline points="${rpsLine}" fill="none" stroke="#1f3a5f" stroke-width="2"/>
+    <polyline points="${p95Line}" fill="none" stroke="#b54708" stroke-width="2" stroke-dasharray="4 3"/>
+    ${points}${xLabels}
+    <text x="${width / 2}" y="${height - 2}" text-anchor="middle" font-size="11" fill="#667085">virtual users</text>
+    <text x="14" y="${height / 2}" text-anchor="middle" font-size="11" fill="#667085" transform="rotate(-90 14 ${height / 2})">throughput / p95</text>
+  </svg>`;
+}
+
+async function refreshHistory() {
+  try {
+    const data = await api('/evaluations');
+    historyCache = data.evaluations || [];
+  } catch (_) { historyCache = []; }
+  const body = $('history');
+  if (!historyCache.length) {
+    body.innerHTML = '<tr><td colspan="11" class="muted">No evaluations recorded.</td></tr>';
+    return;
+  }
+  body.innerHTML = historyCache.slice(0, 12).map(entry => {
+    const time = entry.completed_at ? new Date(entry.completed_at).toLocaleTimeString() : '';
+    if (entry.kind !== 'run') {
+      const cap = entry.capacity_users;
+      const levels = entry.workload?.levels || (entry.curve || []).map(item => item.users);
+      const range = levels.length ? `${num(levels[0])}–${num(levels.at(-1))}` : '—';
+      return `<tr><td>${esc(time)}</td><td>${esc(entry.kind)}</td><td>${esc(entry.engine)}</td><td>${esc(entry.profile || 'session')}</td><td class="r n">${range}</td><td class="r n">${num(entry.workload?.seconds_per_level)}s</td><td class="r n">—</td><td class="r n">—</td><td class="r n">—</td><td class="r n">—</td><td>${cap ? badge(true, 'cap ' + cap) : badge(false)}</td></tr>`;
+    }
+    const r = entry.results || {}, slo = entry.slo || {};
+    const passed = slo.passed !== false;
+    return `<tr><td>${esc(time)}</td><td>run</td><td>${esc(entry.engine)}</td><td>${esc(entry.profile || 'session')}</td><td class="r n">${num(entry.workload?.users)}</td><td class="r n">${num(entry.workload?.requested_seconds)}s</td><td class="r n">${num(r.throughput_rps, 0)}</td><td class="r n">${num(r.latency_ms?.p95, 2)}</td><td class="r n">${num(r.latency_ms?.p99, 2)}</td><td class="r n">${((r.error_rate || 0) * 100).toFixed(2)}</td><td>${badge(passed, (slo.failures || []).join(', '))}</td></tr>`;
+  }).join('');
+  showSelectedResult();
+}
+
+$('run').addEventListener('click', () => launch('run'));
+$('capacity').addEventListener('click', () => launch('capacity'));
+init();
+</script>
+</body>
+</html>
