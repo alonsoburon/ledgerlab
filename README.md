@@ -1,55 +1,38 @@
 # LedgerLab
 
-**A portable, reproducible capacity benchmark for a banking ledger — the same dual-entry backend implemented in four languages, measured against realistic virtual users and explicit SLOs.**
+The same banking ledger written four times (Python, Rust, C, COBOL) plus a load-testing tool that measures how many concurrent users each version can hold. The point is to answer one question: with a fixed amount of hardware and a transfer endpoint, where does it start to break?
 
-LedgerLab answers the question that matters in a backend review: *how many concurrent customers can this service carry before it violates its latency and error budget, and what breaks first?* It ships one HTTP contract and one double-entry accounting model implemented in **Python, Rust, C, and COBOL**, plus a managed evaluation harness that builds an engine on demand, drives **think-time virtual users**, verifies the ledger invariants, and reports where each engine saturates.
+Everything sits behind one HTTP contract. A transfer posts exactly one debit and one credit in a single transaction, amounts are integers (cents), the journal is immutable, and account balances are cached on the row and reconciled against the journal after every run.
 
 ![Saturation of the SQLite write path](docs/figures/raw_saturation.png)
 
-## What this demonstrates
+## How it works
 
-- **Money as a ledger, not a field.** Integer minor units, one debit + one credit per transfer in a single atomic transaction, immutable journal, balances cached transactionally and reconciled against the journal after every run.
-- **Correctness under concurrency.** Idempotent transfers, insufficient-funds guards, currency-mismatch handling, and automated conformance checks that gate every performance result.
-- **Load-testing methodology.** Closed-loop virtual users with realistic think time, explicit service-level objectives (p95 < 500 ms, p99 < 1 s, errors < 1%), an adaptive capacity search (double + binary-search the knee), a **warm-up**, a **longer soak confirmation**, and **CPU/RSS attribution** so you can see what actually saturates.
-- **Reproducible tooling.** One command to benchmark every engine and regenerate publication-ready charts; every result records runtime versions, host, timing, resources, and invariant outcomes.
+The evaluation manager builds the engine you pick, starts it on a free port with a throwaway SQLite database, checks it against the shared contract in `docs/protocol.md`, runs a workload, verifies the ledger invariants, and shuts it down. The COBOL engine is a COBOL authorization routine called from the same C HTTP/SQLite adapter, and results label it that way.
 
-## Architecture
+Two workloads:
 
-```text
-Browser UI / CLI driver
-              |
-      LedgerLab evaluation manager
-       /       |       |      \
-   Python    Rust      C     COBOL
-   adapter   adapter adapter adapter
-       \       |       |      /
-        implementation-local ledger  (SQLite WAL)
-```
+- `session` is a person using the app. Read the balance, wait 3–7 seconds, read the statement, wait 3–8 seconds, maybe post a transfer (about a quarter of the turns do, with a realistic idempotent retry), wait 5–15 seconds, repeat. This is the number I care about: how many concurrent customers fit under the latency target.
+- `raw` just hammers the transfer endpoint with no waiting, to see the write ceiling. It never gets reported as a user count.
 
-Every engine is built from source, exercised through the same HTTP contract (`docs/protocol.md`), and torn down with a disposable database. The COBOL engine is a COBOL authorization core called from the shared C HTTP/SQLite adapter and is labelled as such in every result.
+A run passes only if p95 is under 500 ms, p99 under 1 s, and errors under 1%. To find capacity the manager warms the engine up, doubles the user count until something fails, binary-searches the last good point, then re-runs that level for much longer to make sure it actually holds. `docs/benchmark-methodology.md` has the details.
 
-## Methodology
+## Results
 
-- **`session` profile (capacity).** A closed-loop banking client: read balance → pause (3–7 s) → read statement → pause (3–8 s) → 25% chance of a transfer (with a realistic idempotent retry) → pause (5–15 s), over a shared account pool. This is the "how many customers" number.
-- **`raw` profile (write ceiling).** The transfer endpoint saturated with no think time — reported separately, never as user capacity.
-- **SLOs.** A run passes only if p95 < 500 ms, p99 < 1 s, and errors < 1%. The **capacity run** warms up, doubles concurrency until an SLO fails, binary-searches the knee, then **confirms** the reported level with a longer soak (stepping down if it can't hold). Full details in `docs/benchmark-methodology.md`.
+Everything below comes from `docs/sample-results.json`, regenerated with `make bench` and `make figures`. One machine, one workload, one shot per level. Treat it as a snapshot of this setup, not a ranking of programming languages.
 
-## Results on this host
+Concurrent users under the SLO:
 
-Numbers are real, generated by the committed pipeline (`docs/sample-results.json`); charts in `docs/figures/`. Read the [fair-comparison rules](docs/benchmark-methodology.md) and the limitations before quoting them.
-
-**Concurrent capacity under SLO** (each level re-confirmed with a soak):
-
-| Engine | Concurrent sessions (`session`) | First breach | Concurrent writers (`raw`) | First breach |
+| Engine | Sessions | First breach | Writers | First breach |
 |---|---:|---:|---:|---:|
 | Python | 5,120 | 6,144 | 512 | 640 |
-| Rust | 8,192 | — (edge) | 128 | 320 |
+| Rust | 8,192 | at the limit | 128 | 320 |
 | C | 7,168 | 8,192 | 512 | 640 |
 | COBOL hybrid | 7,168 | 8,192 | 512 | 640 |
 
 ![Concurrent capacity by engine](docs/figures/capacity_by_engine.png)
 
-**Realistic session** — 32 virtual users, 10 s; all engines clear the SLO comfortably, and the in-memory core isolates language/runtime cost from storage:
+A short session run (32 users, 10 seconds) looks like this. Everything passes comfortably at that load; the in-memory core column measures the transfer arithmetic without HTTP or SQLite:
 
 | Engine | req/s | p50 ms | p95 ms | p99 ms | core Mops/s |
 |---|---:|---:|---:|---:|---:|
@@ -58,7 +41,7 @@ Numbers are real, generated by the committed pipeline (`docs/sample-results.json
 | C | 6.6 | 1.17 | 1.59 | 1.71 | 6.52 |
 | COBOL hybrid | 6.7 | 1.05 | 1.55 | 1.73 | 1.16 |
 
-**Raw write path** — the transfer endpoint saturates and then queueing dominates:
+The raw write path saturates and then queueing takes over:
 
 | Engine | Peak transfers/s | Capacity under SLO | First breach |
 |---|---:|---:|---:|
@@ -73,29 +56,31 @@ Numbers are real, generated by the committed pipeline (`docs/sample-results.json
 ![p95 by concurrency](docs/figures/capacity_heatmap.png)
 ![In-memory transfer core](docs/figures/inmemory_core.png)
 
-## Key findings
+## What I found
 
-- **The bottleneck moves.** At low concurrency every engine is fast; the server tops out when the **single SQLite writer** (and, at high virtual-user counts, the **colocated load generator**) saturates — the same lesson as moving Postgres out-of-process in the videos this is inspired by. Making the language 2× faster stops mattering once the write path is the wall.
-- **Tail latency breaks first.** p50 stays flat while p99 climbs, so capacity is a tail-latency question, not a throughput one.
-- **Resource attribution matters.** At ~7–8k sessions the engine CPU/RSS is reported next to the generator's, so it's clear the co-located client — not the language — is the practical ceiling on this box.
+The bottleneck moves. Everything is fast until the single SQLite writer saturates, and after that queueing is what makes latency climb. At a few thousand users the load generator on the same box also starts to matter, so the language stops being the limiting factor.
 
-## Run it
+The tail is what breaks first. The median stays flat while p99 climbs, so capacity here is a tail-latency question rather than a throughput one.
 
-Requirements for the Python demo: Python 3.11+, no third-party packages. To build the other engines you also need Rust/Cargo; a C compiler with `pkg-config`, libevent, JSON-C, and SQLite dev files; and GCC's `gcobol` frontend. Builds happen automatically when an engine is evaluated.
+Rust took the most concurrent sessions, Python the least, and C and COBOL came out identical, which makes sense since the COBOL core runs through C's HTTP adapter.
+
+## Running it
+
+For the Python demo you only need Python 3.11+, no third-party packages. The other engines additionally need Rust/Cargo, a C compiler with `pkg-config`, libevent, JSON-C and SQLite dev files, and GCC's `gcobol`. They get built automatically the first time you evaluate them.
 
 ```sh
-make demo PORT=8080     # or: python3 -m ledgerlab
+make demo PORT=8080     # or python3 -m ledgerlab
 # open the printed URL, pick an engine, press "Find capacity"
 ```
 
-Headless, from another terminal:
+From another terminal:
 
 ```sh
-make bench   BASE=http://127.0.0.1:8080      # run every engine, write docs/sample-results.json
-make figures                                       # regenerate charts (uses uv)
+make bench    # run every engine, write docs/sample-results.json
+make figures  # regenerate the charts, needs uv
 ```
 
-Or drive the load generator directly:
+Or call the load generator directly:
 
 ```sh
 python3 -m ledgerlab.bench --base-url http://127.0.0.1:8080 \
@@ -103,18 +88,18 @@ python3 -m ledgerlab.bench --base-url http://127.0.0.1:8080 \
     --slo-p95-ms 500 --slo-p99-ms 1000 --slo-error-rate 0.01
 ```
 
-## Repository map
+## What's where
 
-- `ledgerlab/` Python reference service, evaluation manager, and load generator (`bench.py`).
-- `web/` light-mode evaluation dashboard (served by the reference service).
-- `scripts/` reproducible benchmark driver (`run_benchmarks.py`) and chart renderer (`plot_results.py`).
-- `implementations/` Rust, C, and COBOL engines behind the same contract.
-- `docs/` architecture, protocol, benchmark methodology, sample results, and figures.
+- `ledgerlab/` the Python reference service, the evaluation manager, and the load generator (`bench.py`).
+- `web/` the dashboard, served by the reference service.
+- `scripts/` the benchmark driver and the chart renderer.
+- `implementations/` the Rust, C and COBOL engines.
+- `docs/` architecture, protocol, methodology, sample results, figures.
 
-## Limitations & honesty
+## Caveats
 
-Results are measurements of complete implementation stacks on one machine, not a universal ranking of languages. The load generator runs on the same host as the engine, so the CPU/RSS split is approximate and very high concurrency reflects client contention as much as server limits. Each capacity number is soak-confirmed but is a single adaptive run and is tail-latency sensitive; for publishable numbers use a separate generator host and repeat. Authentication, real customer data, external payment rails, regulatory claims, and production deployment are out of scope — this is an educational benchmark over synthetic data.
+The load generator runs on the same machine as the engine, so at high concurrency part of what you're measuring is client contention and the CPU numbers are approximate. Each capacity figure is one run with a soak at the end, and it's tail-sensitive, so repeat it before quoting it. For anything you'd publish, run the generator on a separate host. Authentication, real customer data, payment rails and production deployment are out of scope. This is synthetic data over SQLite.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).

@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Render publication-quality charts from LedgerLab evaluation results.
+"""Render charts from LedgerLab evaluation results.
 
 Reads a JSON list of run/sweep reports (as written by
 ``scripts/run_benchmarks.py`` or served by ``GET /evaluations``) and writes
-PNG figures suitable for embedding in the README.
-
-Run it with the plotting dependencies without installing them globally::
+PNGs for the README.
 
     uv run --with matplotlib --with seaborn --with pandas \
         scripts/plot_results.py --input docs/sample-results.json --output docs/figures
@@ -25,11 +23,21 @@ import pandas as pd
 import seaborn as sns
 
 DISPLAY = {"python": "Python", "rust": "Rust", "c": "C", "cobol": "COBOL hybrid"}
-PALETTE = {"python": "#1f3a5f", "rust": "#b54708", "c": "#067647", "cobol": "#6941c6"}
-FALLBACK = ["#1f3a5f", "#b54708", "#067647", "#6941c6", "#b42318"]
 
-sns.set_theme(style="whitegrid", context="talk")
-plt.rcParams.update({"figure.dpi": 150, "savefig.bbox": "tight", "axes.titlesize": 14, "axes.titleweight": "bold"})
+sns.set_theme(style="whitegrid", context="notebook")
+plt.rcParams.update({
+    "figure.dpi": 130,
+    "savefig.bbox": "tight",
+    "font.size": 10,
+    "axes.titlesize": 12,
+    "axes.titleweight": "normal",
+    "axes.labelsize": 10,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+    "legend.fontsize": 9,
+    "grid.color": "#e6e6e6",
+    "grid.linewidth": 0.6,
+})
 
 
 def engine_name(engine):
@@ -83,20 +91,13 @@ def save(fig, output, name):
 def plot_peak_throughput(sweeps, output):
     if not sweeps:
         return
-    engines, peaks, peak_users = [], [], []
-    for engine, sweep in sweeps.items():
-        best = max(sweep["curve"], key=lambda entry: entry["throughput_rps"])
-        engines.append(engine)
-        peaks.append(best["throughput_rps"])
-        peak_users.append(best["users"])
-    labels = [engine_name(engine) for engine in engines]
-    fig, ax = plt.subplots(figsize=(9, 4.6))
-    sns.barplot(x=labels, y=peaks, hue=labels, palette=[PALETTE.get(engine, "#1f3a5f") for engine in engines], legend=False, ax=ax)
-    ax.set_title("Peak transfer throughput by engine (raw write path)")
-    ax.set_xlabel("")
-    ax.set_ylabel("transfers / s")
-    for index, (value, users) in enumerate(zip(peaks, peak_users)):
-        ax.text(index, value, f"{value:,.0f}\n@{users} writers", ha="center", va="bottom", fontsize=10)
+    labels = [engine_name(engine) for engine in sweeps]
+    peaks = [max(sweep["curve"], key=lambda e: e["throughput_rps"])["throughput_rps"] for sweep in sweeps.values()]
+    fig, ax = plt.subplots(figsize=(7, 3.6))
+    ax.bar(labels, peaks, color="#4c72b0")
+    ax.set_title("peak transfers/s (raw write path)")
+    ax.set_ylabel("transfers/s")
+    ax.tick_params(axis="x", rotation=0)
     save(fig, output, "throughput_by_engine.png")
 
 
@@ -104,69 +105,62 @@ def plot_latency(runs, output):
     if not runs:
         return
     engines = list(runs)
-    labels = [engine_name(engine) for engine in engines]
     frame = pd.DataFrame({
-        "engine": labels,
-        "p50": [runs[engine]["results"]["latency_ms"]["p50"] for engine in engines],
-        "p95": [runs[engine]["results"]["latency_ms"]["p95"] for engine in engines],
-        "p99": [runs[engine]["results"]["latency_ms"]["p99"] for engine in engines],
-    })
-    melted = frame.melt(id_vars="engine", var_name="percentile", value_name="ms")
-    order = ["p50", "p95", "p99"]
-    melted["percentile"] = pd.Categorical(melted["percentile"], order, ordered=True)
-    fig, ax = plt.subplots(figsize=(9, 4.6))
-    sns.barplot(data=melted, x="engine", y="ms", hue="percentile", palette=["#98a2b3", "#b54708", "#b42318"], ax=ax)
-    ax.set_title("Session request latency by percentile")
+        "engine": [engine_name(engine) for engine in engines],
+        "p50": [runs[e]["results"]["latency_ms"]["p50"] for e in engines],
+        "p95": [runs[e]["results"]["latency_ms"]["p95"] for e in engines],
+        "p99": [runs[e]["results"]["latency_ms"]["p99"] for e in engines],
+    }).melt(id_vars="engine", var_name="percentile", value_name="ms")
+    frame["percentile"] = pd.Categorical(frame["percentile"], ["p50", "p95", "p99"], ordered=True)
+    fig, ax = plt.subplots(figsize=(7, 3.6))
+    sns.barplot(data=frame, x="engine", y="ms", hue="percentile", ax=ax)
+    ax.set_title("session latency (32 users)")
     ax.set_xlabel("")
-    ax.set_ylabel("milliseconds")
-    ax.legend(title="")
-    for container in ax.containers:
-        ax.bar_label(container, fmt="%.2f", fontsize=9)
+    ax.set_ylabel("ms")
+    ax.legend(title="", ncol=3, loc="upper left")
+    ax.tick_params(axis="x", rotation=0)
     save(fig, output, "latency_by_engine.png")
 
 
 def plot_raw_saturation(sweeps, output, slo):
     if not sweeps:
         return
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-    for index, (engine, sweep) in enumerate(sweeps.items()):
-        color = PALETTE.get(engine, FALLBACK[index % len(FALLBACK)])
-        curve = sorted(sweep["curve"], key=lambda entry: entry["users"])
-        users = [entry["users"] for entry in curve]
-        rps = [entry["throughput_rps"] for entry in curve]
-        p95 = [entry["latency_ms"]["p95"] for entry in curve]
-        axes[0].plot(users, rps, marker="o", color=color, label=engine_name(engine))
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+    for engine, sweep in sweeps.items():
+        curve = sorted(sweep["curve"], key=lambda e: e["users"])
+        users = [e["users"] for e in curve]
+        rps = [e["throughput_rps"] for e in curve]
+        p95 = [e["latency_ms"]["p95"] for e in curve]
+        color = axes[0].plot(users, rps, marker="o", label=engine_name(engine))[0].get_color()
         axes[1].plot(users, p95, marker="o", color=color, label=engine_name(engine))
-        failures = [entry for entry in curve if not entry["slo"]["passed"]]
-        axes[1].scatter([entry["users"] for entry in failures], [entry["latency_ms"]["p95"] for entry in failures], marker="x", s=90, color="#b42318", zorder=5)
-    axes[0].set_title("Raw write path: throughput")
-    axes[0].set_xlabel("concurrent writers")
-    axes[0].set_ylabel("transfers / s")
-    axes[0].set_xscale("log", base=2)
-    axes[1].set_title("Raw write path: p95 latency")
-    axes[1].set_xlabel("concurrent writers")
-    axes[1].set_ylabel("milliseconds")
-    axes[1].set_xscale("log", base=2)
-    axes[1].axhline(slo["p95_ms"], color="#b42318", linestyle="--", linewidth=1.2, label=f"p95 SLO {slo['p95_ms']:.0f} ms")
-    axes[1].legend()
+        bad = [e for e in curve if not e["slo"]["passed"]]
+        axes[1].plot([e["users"] for e in bad], [e["latency_ms"]["p95"] for e in bad], "x", color=color, markersize=7)
+    axes[0].set_title("throughput")
+    axes[0].set_ylabel("transfers/s")
+    axes[1].set_title("p95 latency")
+    axes[1].set_ylabel("ms")
+    axes[1].axhline(slo["p95_ms"], color="#888", linestyle="--", linewidth=1, label="p95 SLO")
     for ax in axes:
-        ax.set_xticks(sorted({entry["users"] for sweep in sweeps.values() for entry in sweep["curve"]}))
+        ax.set_xlabel("concurrent writers")
+        ax.set_xscale("log", base=2)
         ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    fig.suptitle("Saturation of the SQLite write path (raw profile)", fontweight="bold")
+    axes[1].legend()
     save(fig, output, "raw_saturation.png")
 
 
 def plot_capacity_heatmap(sweeps, output, slo):
     if not sweeps:
         return
-    by_engine = {engine: {entry["users"]: entry["latency_ms"]["p95"] for entry in sweep["curve"]} for engine, sweep in sweeps.items()}
+    by_engine = {engine: {e["users"]: e["latency_ms"]["p95"] for e in sweep["curve"]} for engine, sweep in sweeps.items()}
     columns = sorted({level for values in by_engine.values() for level in values})
-    index = [engine_name(engine) for engine in by_engine]
-    rows = [[by_engine[engine].get(level) for level in columns] for engine in by_engine]
-    frame = pd.DataFrame(rows, index=index, columns=[str(level) for level in columns])
-    fig, ax = plt.subplots(figsize=(9, 1.2 + 0.7 * len(index)))
-    sns.heatmap(frame, annot=True, fmt=".0f", cmap="Oranges", cbar_kws={"label": "p95 ms"}, linewidths=0.5, linecolor="white", ax=ax)
-    ax.set_title(f"p95 latency by concurrency · raw profile (SLO {slo['p95_ms']:.0f} ms)")
+    frame = pd.DataFrame(
+        [[by_engine[engine].get(level) for level in columns] for engine in by_engine],
+        index=[engine_name(engine) for engine in by_engine],
+        columns=[str(level) for level in columns],
+    )
+    fig, ax = plt.subplots(figsize=(7, 1.2 + 0.6 * len(frame.index)))
+    sns.heatmap(frame, annot=True, fmt=".0f", cmap="Blues", cbar_kws={"label": "p95 ms"}, linewidths=0.5, ax=ax)
+    ax.set_title("p95 ms (raw profile)")
     ax.set_xlabel("concurrent writers")
     ax.set_ylabel("")
     save(fig, output, "capacity_heatmap.png")
@@ -177,31 +171,23 @@ def plot_capacity_summary(reports, output, slo):
     if not capacity:
         return
     engines = []
-    for engine, profile in capacity:
+    for engine, _ in capacity:
         if engine not in engines:
             engines.append(engine)
     rows = []
-    annotations = {}
     for engine in engines:
         for profile in ("session", "raw"):
             report = capacity.get((engine, profile))
-            if not report:
-                continue
-            rows.append({"engine": engine_name(engine), "profile": profile, "capacity": report["capacity_users"]})
-            ceil = report.get("first_failing_users") is None
-            annotations[(engine_name(engine), profile)] = ("≥" if ceil else "") + str(report["capacity_users"])
+            if report:
+                rows.append({"engine": engine_name(engine), "profile": profile, "capacity": report["capacity_users"]})
     frame = pd.DataFrame(rows)
-    fig, ax = plt.subplots(figsize=(9, 4.8))
-    sns.barplot(data=frame, x="engine", y="capacity", hue="profile", hue_order=["session", "raw"], palette=["#1f3a5f", "#98a2b3"], ax=ax)
-    ax.set_title("Concurrent capacity within SLO by engine")
+    fig, ax = plt.subplots(figsize=(7, 3.6))
+    sns.barplot(data=frame, x="engine", y="capacity", hue="profile", hue_order=["session", "raw"], ax=ax)
+    ax.set_title("users within SLO")
     ax.set_xlabel("")
-    ax.set_ylabel("virtual users")
-    ax.legend(title="profile")
-    for container, profile in zip(ax.containers, ("session", "raw")):
-        values = [annotations.get((engine_name(engine), profile), "") for engine in engines]
-        ax.bar_label(container, labels=values, fontsize=10)
-    ax.text(0.0, -0.24, f"≥ = still met every SLO at the test ceiling · p95 ≤ {slo['p95_ms']:.0f} ms · p99 ≤ {slo['p99_ms']:.0f} ms · errors ≤ {slo['error_rate'] * 100:.1f}%",
-            transform=ax.transAxes, fontsize=9, color="#667085")
+    ax.set_ylabel("concurrent users")
+    ax.legend(title="")
+    ax.tick_params(axis="x", rotation=0)
     save(fig, output, "capacity_by_engine.png")
 
 
@@ -211,13 +197,11 @@ def plot_inmemory(runs, output):
         return
     labels = [engine_name(engine) for engine in data]
     values = [data[engine]["memory_core"]["throughput_ops_per_second"] / 1e6 for engine in data]
-    fig, ax = plt.subplots(figsize=(9, 4.6))
-    sns.barplot(x=labels, y=values, hue=labels, palette=[PALETTE.get(engine, "#1f3a5f") for engine in data], legend=False, ax=ax)
-    ax.set_title("In-memory transfer-core throughput (no HTTP or SQLite)")
-    ax.set_xlabel("")
-    ax.set_ylabel("millions of operations / s")
-    for index, value in enumerate(values):
-        ax.text(index, value, f"{value:.2f}M", ha="center", va="bottom", fontsize=10)
+    fig, ax = plt.subplots(figsize=(7, 3.6))
+    ax.bar(labels, values, color="#4c72b0")
+    ax.set_title("in-memory core")
+    ax.set_ylabel("millions of ops/s")
+    ax.tick_params(axis="x", rotation=0)
     save(fig, output, "inmemory_core.png")
 
 

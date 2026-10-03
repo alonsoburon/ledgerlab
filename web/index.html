@@ -69,7 +69,7 @@ ul.checks li.no{color:var(--bad)}
 </head>
 <body>
 <header class="top">
-  <div><h1>LedgerLab</h1><p>Portable dual-entry ledger benchmark · managed engine evaluations</p></div>
+  <div><h1>LedgerLab</h1><p>Dual-entry ledger benchmark · engine evaluations</p></div>
   <div class="host" id="host">local</div>
 </header>
 <div class="layout">
@@ -275,7 +275,7 @@ function renderRun(result) {
   $('result-tag').innerHTML = `${esc(result.engine)} · ${esc(result.profile || 'session')} · ${badge(passed, (slo.failures || []).join(', ') || 'all SLOs met')}`;
   const cards = `
     <div class="cards">
-      <div class="card"><div class="k">Throughput</div><div class="v num">${num(r.throughput_rps, 0)}</div><div class="s">req/s managed</div></div>
+      <div class="card"><div class="k">Throughput</div><div class="v num">${num(r.throughput_rps, 0)}</div><div class="s">requests/s</div></div>
       <div class="card"><div class="k">Writes</div><div class="v num">${num(r.writes_per_second, 0)}</div><div class="s">transfers/s</div></div>
       <div class="card"><div class="k">p95 latency</div><div class="v num">${num(r.latency_ms.p95, 2)}</div><div class="s">ms</div></div>
       <div class="card"><div class="k">p99 latency</div><div class="v num">${num(r.latency_ms.p99, 2)}</div><div class="s">ms</div></div>
